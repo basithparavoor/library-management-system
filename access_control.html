@@ -14,6 +14,144 @@
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="components.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Enhanced Access Control & RBAC Matrix Styling */
+        .rbac-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 1rem;
+            margin: 1.25rem 0 1.5rem 0;
+        }
+
+        .rbac-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.15rem 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 1.1rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+        }
+
+        .rbac-stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+            border-color: rgba(59, 130, 246, 0.35);
+        }
+
+        .rbac-stat-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .rbac-stat-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-muted);
+            margin-bottom: 0.2rem;
+        }
+
+        .rbac-stat-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        /* Modern RBAC Matrix Switch Toggle */
+        .rbac-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+            margin: 0 auto;
+        }
+
+        .rbac-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .rbac-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: var(--border-color);
+            transition: .22s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 20px;
+        }
+
+        .rbac-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .22s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+        }
+
+        input:checked + .rbac-slider {
+            background-color: var(--brand-primary);
+        }
+
+        input:checked + .rbac-slider:before {
+            transform: translateX(16px);
+        }
+
+        input:disabled + .rbac-slider {
+            opacity: 0.75;
+            cursor: not-allowed;
+            background-color: #d97706; /* gold/amber for root superadmin */
+        }
+
+        /* Table header improvements */
+        #rbac-table th {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.85rem 0.65rem;
+            white-space: nowrap;
+            background: var(--bg-muted);
+            border-bottom: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        #rbac-table th:first-child {
+            text-align: left;
+            padding-left: 1.25rem;
+        }
+
+        #rbac-table td {
+            padding: 0.85rem 0.65rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        #rbac-table td:first-child {
+            padding-left: 1.25rem;
+        }
+
+        #rbac-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.025);
+        }
+    </style>
 </head>
 <body>
     <div class="app-container">
@@ -41,41 +179,41 @@
                 </div>
 
                 <!-- RBAC Stats Row -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                <div class="rbac-stats-grid">
+                    <div class="rbac-stat-card">
+                        <div class="rbac-stat-icon" style="background: rgba(59, 130, 246, 0.12); color: var(--brand-primary);">
                             <i data-lucide="shield"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Configured Roles</div>
-                            <div class="stat-value" id="kpi-total-roles">8</div>
+                            <div class="rbac-stat-label">Configured Roles</div>
+                            <div class="rbac-stat-val" id="kpi-total-roles">8 Active</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                    <div class="rbac-stat-card">
+                        <div class="rbac-stat-icon" style="background: rgba(16, 185, 129, 0.12); color: var(--color-success);">
                             <i data-lucide="lock"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Security Protocol</div>
-                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-success);">ENFORCED</div>
+                            <div class="rbac-stat-label">Security Protocol</div>
+                            <div class="rbac-stat-val" style="font-size: 1.1rem; color: var(--color-success);">ENFORCED</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                    <div class="rbac-stat-card">
+                        <div class="rbac-stat-icon" style="background: rgba(139, 92, 246, 0.12); color: var(--brand-accent);">
                             <i data-lucide="building"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Multi-Campus Scope</div>
-                            <div class="stat-value" style="font-size: 1.1rem; color: var(--brand-primary);">ISOLATED</div>
+                            <div class="rbac-stat-label">Multi-Campus Scope</div>
+                            <div class="rbac-stat-val" style="font-size: 1.1rem; color: var(--brand-primary);">ISOLATED</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                    <div class="rbac-stat-card">
+                        <div class="rbac-stat-icon" style="background: rgba(245, 158, 11, 0.12); color: var(--color-warning);">
                             <i data-lucide="key"></i>
                         </div>
                         <div>
-                            <div class="stat-label">Multi-Modal Auth</div>
-                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-warning);">NFC+QR+PIN</div>
+                            <div class="rbac-stat-label">Multi-Modal Auth</div>
+                            <div class="rbac-stat-val" style="font-size: 1.1rem; color: var(--color-warning);">NFC+QR+PIN</div>
                         </div>
                     </div>
                 </div>
@@ -88,7 +226,7 @@
                                 <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i>
                             </div>
                             <div>
-                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Privileged Admin Accounts</h3>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.5rem;">Privileged Admin Accounts <span class="badge" style="background: rgba(59,130,246,0.12); color: var(--brand-primary); font-size: 0.7rem; font-weight: 700;" id="admin-count-badge">1 Active</span></h3>
                                 <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Full-access system administrators delegated under primary Super Admin.</p>
                             </div>
                         </div>
@@ -134,15 +272,15 @@
                         <table id="rbac-table">
                             <thead>
                                 <tr>
-                                    <th style="min-width: 180px;">Institutional Role</th>
-                                    <th>All Campuses</th>
-                                    <th>Book Catalog</th>
-                                    <th>Circulation</th>
-                                    <th>Lab Tracker</th>
-                                    <th>Periods & Attendance</th>
-                                    <th>Event Halls</th>
-                                    <th>Approvals</th>
-                                    <th>Reports</th>
+                                    <th style="min-width: 220px; text-align: left;">Institutional Role</th>
+                                    <th title="Universal Multi-Campus Access"><i data-lucide="globe" style="width: 13px; vertical-align: middle;"></i> All Campuses</th>
+                                    <th title="Books & Catalog Management"><i data-lucide="book-open" style="width: 13px; vertical-align: middle;"></i> Book Catalog</th>
+                                    <th title="Check-out & Circulation"><i data-lucide="repeat" style="width: 13px; vertical-align: middle;"></i> Circulation</th>
+                                    <th title="Computer & Lab Tracking"><i data-lucide="monitor" style="width: 13px; vertical-align: middle;"></i> Lab Tracker</th>
+                                    <th title="Period & Attendance Sessions"><i data-lucide="calendar" style="width: 13px; vertical-align: middle;"></i> Periods</th>
+                                    <th title="Auditorium & Event Management"><i data-lucide="ticket" style="width: 13px; vertical-align: middle;"></i> Event Halls</th>
+                                    <th title="Facility & Member Approvals"><i data-lucide="check-circle" style="width: 13px; vertical-align: middle;"></i> Approvals</th>
+                                    <th title="Dynamic Analytics & Reports"><i data-lucide="bar-chart-2" style="width: 13px; vertical-align: middle;"></i> Reports</th>
                                 </tr>
                             </thead>
                             <tbody id="rbac-tbody">
@@ -221,5 +359,74 @@
     <script type="module" src="auth.js"></script>
     <script type="module" src="ui.js"></script>
     <script type="module" src="access_control.js"></script>
+
+    <!-- MODAL: EDIT ADMIN ACCOUNT -->
+    <div id="modal-edit-admin" class="app-dialog-overlay" style="display: none;">
+        <div class="app-dialog modal-responsive" style="max-width: 520px; width: 94vw; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="user-cog" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Edit Privileged Administrator</h3>
+                        <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0;">Modify credentials, authority scope, and campus assignment</p>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-icon" id="btn-close-edit-admin"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <form id="form-edit-admin">
+                <input type="hidden" id="edit-admin-id">
+
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Administrator Full Name *</label>
+                    <input type="text" id="edit-admin-name" required style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Admin Login Email *</label>
+                    <input type="email" id="edit-admin-email" required style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <div class="modal-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Administrative Role</label>
+                        <select id="edit-admin-role" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
+                            <option value="SYSTEM_ADMIN">🛡️ System Administrator (Access All)</option>
+                            <option value="INSTITUTION_HEAD">👑 Institution Head / Chancellor</option>
+                            <option value="CAMPUS_HEAD">🏛️ Multi-Campus Dean</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Designation / Title</label>
+                        <input type="text" id="edit-admin-designation" style="width: 100%; padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                    </div>
+                </div>
+
+                <div class="modal-form-grid" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 0.85rem; margin-bottom: 1.25rem;">
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Campus Scope Authority</label>
+                        <select id="edit-admin-campus" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
+                            <option value="ALL">🌐 Universal Multi-Campus Authority (All Branches)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Status</label>
+                        <select id="edit-admin-status" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
+                            <option value="ACTIVE">🟢 Active</option>
+                            <option value="SUSPENDED">🔴 Suspended</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-edit-admin">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-edit-admin"><i data-lucide="check" style="width: 15px;"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

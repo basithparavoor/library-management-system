@@ -841,6 +841,32 @@ export class ErpDataService {
         return admin;
     }
 
+    async updateAdminAccount(id, updates) {
+        let list = this.getAdminAccounts();
+        const idx = list.findIndex(a => a.id === id);
+        if (idx === -1) throw new Error("Administrator account not found.");
+
+        list[idx] = { ...list[idx], ...updates, updated_at: new Date().toISOString() };
+        localStorage.setItem(STORAGE_KEYS.ADMIN_ACCOUNTS, JSON.stringify(list));
+        window.dispatchEvent(new CustomEvent('adminAccountsUpdated', { detail: list }));
+
+        // Remote Supabase persistence
+        try {
+            await supabase.from('admin_accounts').update({
+                name: list[idx].name,
+                email: list[idx].email,
+                role: list[idx].role,
+                campus_id: list[idx].campus_id,
+                designation: list[idx].designation,
+                status: list[idx].status || 'ACTIVE'
+            }).eq('id', id);
+        } catch (e) {
+            console.warn("Supabase admin account update notice:", e);
+        }
+
+        return list[idx];
+    }
+
     async deleteAdminAccount(id) {
         let list = this.getAdminAccounts();
         const target = list.find(a => a.id === id);

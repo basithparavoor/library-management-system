@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
     renderRbacMatrix();
     setupEventListeners();
     setupAdminModalListeners();
+    setupEditAdminModalListeners();
 
     // Background sync from Supabase
     if (typeof erp?.syncAdminAccountsFromSupabase === 'function') {
@@ -108,6 +109,23 @@ function renderAdminAccounts() {
 
     const admins = erp.getAdminAccounts();
     const campuses = erp.getCampuses();
+
+    const badge = document.getElementById('admin-count-badge');
+    if (badge) badge.innerText = `${admins.length} Active`;
+
+    if (admins.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                    <i data-lucide="shield-check" style="width: 36px; height: 36px; opacity: 0.35; margin-bottom: 0.5rem;"></i>
+                    <div style="font-weight: 700; color: var(--text-primary);">No Delegated Administrators</div>
+                    <p style="font-size: 0.8rem; margin: 0.25rem 0 0.75rem 0;">Only the root Super Administrator currently holds full credentials.</p>
+                </td>
+            </tr>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+    }
 
     tbody.innerHTML = admins.map(a => {
         const isSuperAdmin = a.role === 'SUPER_ADMIN';
@@ -152,6 +170,7 @@ function renderAdminAccounts() {
                     ${isSuperAdmin ? `
                         <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; padding: 0.3rem 0.6rem;">Root Superadmin</span>
                     ` : `
+                        <button class="btn btn-outline btn-sm btn-edit-admin" data-id="${a.id}" title="Edit Admin Credentials" style="font-size: 0.75rem; padding: 0.3rem 0.65rem; margin-right: 0.35rem; color: var(--brand-primary); border-color: rgba(59,130,246,0.3);"><i data-lucide="edit-3" style="width: 13px; height: 13px;"></i> Edit</button>
                         <button class="btn btn-outline btn-sm" onclick="window.duplicateAdminAccount('${a.id}')" title="Duplicate Admin" style="font-size: 0.75rem; padding: 0.3rem 0.65rem; margin-right: 0.35rem;"><i data-lucide="copy" style="width: 13px; height: 13px;"></i></button>
                         <button class="btn btn-outline btn-sm btn-delete-admin" data-id="${a.id}" data-name="${a.name}" style="color: #ef4444; border-color: rgba(239,68,68,0.3); font-size: 0.75rem; padding: 0.3rem 0.65rem;">
                             <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Delete
@@ -224,9 +243,10 @@ function renderRbacMatrix() {
             const disabledAttr = p.role === 'SUPER_ADMIN' ? 'disabled' : '';
 
             return `
-                <td style="text-align: center;">
-                    <label style="display: inline-flex; align-items: center; cursor: ${p.role === 'SUPER_ADMIN' ? 'not-allowed' : 'pointer'};">
-                        <input type="checkbox" class="rbac-toggle" data-role="${p.role}" data-key="${col.key}" ${isChecked ? 'checked' : ''} ${disabledAttr} style="width: 18px; height: 18px; accent-color: var(--brand-primary); cursor: pointer;">
+                <td style="text-align: center; vertical-align: middle;">
+                    <label class="rbac-switch" title="${p.role === 'SUPER_ADMIN' ? 'Root Superadmin: Full Authority Granted' : 'Toggle ' + col.label + ' permission'}">
+                        <input type="checkbox" class="rbac-toggle" data-role="${p.role}" data-key="${col.key}" ${isChecked ? 'checked' : ''} ${disabledAttr}>
+                        <span class="rbac-slider"></span>
                     </label>
                 </td>
             `;
@@ -369,3 +389,63 @@ function setupEventListeners() {
     });
 }
 
+
+
+function setupEditAdminModalListeners() {
+    const modal = document.getElementById('modal-edit-admin');
+    const closeBtn = document.getElementById('btn-close-edit-admin');
+    const cancelBtn = document.getElementById('btn-cancel-edit-admin');
+    const form = document.getElementById('form-edit-admin');
+
+    const closeModal = () => {
+        if (!modal) return;
+        modal.classList.remove('active');
+        modal.style.display = 'none';
+    };
+
+    closeBtn?.addEventListener('click', closeModal);
+    cancelBtn?.addEventListener('click', closeModal);
+    modal?.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-admin-id')?.value;
+        const name = document.getElementById('edit-admin-name')?.value.trim();
+        const email = document.getElementById('edit-admin-email')?.value.trim();
+        const role = document.getElementById('edit-admin-role')?.value;
+        const designation = document.getElementById('edit-admin-designation')?.value.trim();
+        const campus_id = document.getElementById('edit-admin-campus')?.value;
+        const status = document.getElementById('edit-admin-status')?.value;
+
+        if (!id || !name || !email) {
+            window.app.toast("Please fill in all required fields", "warning");
+            return;
+        }
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            await erp.updateAdminAccount(id, {
+                name,
+                email,
+                role,
+                designation,
+                campus_id,
+                status
+            });
+
+            playSynthSound('success');
+            window.app.toast(`Administrator "${name}" updated successfully!`, 'success', 'Admin Updated');
+            closeModal();
+            renderAdminAccounts();
+        } catch (err) {
+            console.error("Failed to update admin:", err);
+            window.app.toast("Failed to update administrator: " + (err.message || 'Unknown error'), "error");
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    });
+}

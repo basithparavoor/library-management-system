@@ -138,6 +138,27 @@ export class ShortcutEngine {
     }
 
     initKeyListener() {
+        // Visual Shortcut Trigger HUD Notification
+        const showShortcutHud = (name, key) => {
+            let hud = document.getElementById('shortcut-trigger-hud');
+            if (!hud) {
+                hud = document.createElement('div');
+                hud.id = 'shortcut-trigger-hud';
+                hud.style.cssText = 'position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(15,23,42,0.92); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: white; padding: 0.45rem 1.1rem; border-radius: 9999px; font-size: 0.78rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.15); z-index: 99999; opacity: 0; pointer-events: none; transition: all 0.22s cubic-bezier(0.16,1,0.3,1);';
+                document.body.appendChild(hud);
+            }
+            hud.innerHTML = `<span style="color: #60a5fa;">⚡ Shortcut:</span> ${name} <kbd style="background: rgba(255,255,255,0.2); padding: 0.1rem 0.4rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.72rem;">${key}</kbd>`;
+            hud.style.opacity = '1';
+            hud.style.transform = 'translateX(-50%) translateY(0)';
+            clearTimeout(this._hudTimeout);
+            this._hudTimeout = setTimeout(() => {
+                hud.style.opacity = '0';
+                hud.style.transform = 'translateX(-50%) translateY(20px)';
+            }, 1600);
+        };
+
+        window._showShortcutHud = showShortcutHud;
+
         document.addEventListener('keydown', (e) => {
             // 1. If currently in interactive recording mode (in settings panel)
             if (this.recordingCallback) {
@@ -156,36 +177,61 @@ export class ShortcutEngine {
             const isInputField = targetTag === 'INPUT' || targetTag === 'TEXTAREA' || targetTag === 'SELECT' || e.target.isContentEditable;
             const combo = this.eventToKeyCombo(e);
 
-            // Handle Help Modal (? or F1)
-            if (!isInputField && (e.key === '?' || e.key === 'F1')) {
+            // Help Sheet (? or Shift+/ or F1)
+            if (!isInputField && (e.key === '?' || e.key === 'F1' || (e.shiftKey && e.key === '/'))) {
                 e.preventDefault();
                 this.showHelpModal();
+                showShortcutHud("Shortcuts Cheat Sheet", "?");
                 return;
             }
 
-            // Quick focus on search box if '/' pressed outside inputs
+            // Quick focus search on '/' outside inputs
             if (!isInputField && e.key === '/') {
                 const searchInput = document.querySelector('input[type="search"], input[type="text"][placeholder*="Search" i], #search-box, #global-search-input');
                 if (searchInput) {
                     e.preventDefault();
                     searchInput.focus();
                     searchInput.select();
+                    showShortcutHud("Focus Search Box", "/");
                     return;
                 }
             }
 
-            // If inside input, allow Ctrl+K, F-keys, Alt-shortcuts, Escape, but ignore plain letters
+            // Allow Ctrl+K, F-keys, Alt-shortcuts, Escape even inside text fields
             if (isInputField && !e.ctrlKey && !e.altKey && !e.metaKey && !e.key.startsWith('F') && e.key !== 'Escape') {
                 return;
             }
 
-            // Find matching shortcut
-            const matched = this.shortcuts.find(s => s.currentKey.toLowerCase() === combo.toLowerCase());
+            // Universal Ctrl+K omni search
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (window.toggleCommandPalette) window.toggleCommandPalette();
+                showShortcutHud("Command Palette / Search", "Ctrl+K");
+                return;
+            }
+
+            // Find matching shortcut (matches either combo or key or code)
+            const matched = this.shortcuts.find(s => {
+                const cur = s.currentKey.toLowerCase();
+                if (cur === combo.toLowerCase()) return true;
+                // Handle Alt+Digit1..9
+                if (e.altKey && s.currentKey.startsWith('Alt+')) {
+                    const num = s.currentKey.replace('Alt+', '');
+                    if (e.key === num || e.code === 'Digit' + num) return true;
+                }
+                // Handle F-keys
+                if (s.currentKey === e.key) return true;
+                return false;
+            });
+
             if (matched) {
                 e.preventDefault();
+                e.stopPropagation();
+                showShortcutHud(matched.name, matched.currentKey);
                 this.dispatchAction(matched.id);
             }
-        });
+        }, { capture: true });
     }
 
     dispatchAction(actionId) {

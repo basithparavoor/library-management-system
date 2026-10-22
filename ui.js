@@ -1524,98 +1524,105 @@ window.openBroadcastNotificationModal = function() {
         modal.className = 'app-dialog-overlay';
 
         modal.innerHTML = `
-            <div class="app-dialog modal-responsive" style="max-width: 520px; width: 94vw; text-align: left;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <div class="app-dialog modal-responsive" style="max-width: 540px; width: 94vw; max-height: 88vh; display: flex; flex-direction: column; padding: 0; overflow: hidden; text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.25); border-radius: var(--radius-lg);">
+                <!-- Header (Sticky) -->
+                <div style="padding: 1.15rem 1.5rem; border-bottom: 1px solid var(--border-color); background: var(--bg-surface); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59,130,246,0.12); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                             <i data-lucide="megaphone" style="width: 18px; height: 18px;"></i>
                         </div>
                         <div>
-                            <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0; color: var(--text-primary);">Create Push Notification</h3>
-                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Broadcast live alert across mobile app & web terminals</p>
+                            <h3 style="font-size: 1.1rem; font-weight: 800; margin: 0; color: var(--text-primary);">Create Push Notification</h3>
+                            <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0;">Broadcast live alert across mobile app & web terminals</p>
                         </div>
                     </div>
                     <button class="btn btn-ghost btn-icon btn-close-modal" id="btn-close-broadcast-modal"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
                 </div>
 
-                <form id="form-broadcast-alert">
-                    <div class="input-group" style="margin-bottom: 0.85rem;">
-                        <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Alert Title *</label>
-                        <input type="text" id="bc-title" placeholder="e.g. Scheduled Lab Maintenance / Book Return Notice" required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem;">
-                    </div>
-
-                    <div class="input-group" style="margin-bottom: 0.85rem;">
-                        <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Message Content *</label>
-                        <textarea id="bc-message" rows="3" placeholder="Enter detailed announcement message..." required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.9rem; resize: vertical;"></textarea>
-                    </div>
-
-                    <div class="modal-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                <!-- Scrollable Form Body -->
+                <form id="form-broadcast-alert" style="display: flex; flex-direction: column; flex: 1; overflow: hidden; margin: 0;">
+                    <div style="padding: 1.25rem 1.5rem; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 0.85rem;">
                         <div class="input-group">
-                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Category</label>
-                            <select id="bc-type" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
-                                <option value="BROADCAST">📢 General Broadcast</option>
-                                <option value="APP_UPDATE">📲 Mobile App APK Update / Release</option>
-                                <option value="APPROVAL">🛡️ Executive Approval</option>
-                                <option value="OVERDUE">⚠️ Circulation Overdue</option>
-                                <option value="EVENT">🎟️ Event & Symposium</option>
-                                <option value="LAB_SESSION">💻 Lab & Workstation</option>
-                            </select>
+                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Alert Title *</label>
+                            <input type="text" id="bc-title" placeholder="e.g. Scheduled Lab Maintenance / Book Return Notice" required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.88rem;">
                         </div>
+
                         <div class="input-group">
-                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Campus</label>
-                            <select id="bc-campus" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
-                                <option value="ALL">🌐 All Campuses</option>
-                                ${campusOptions}
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- APK Upload & Release Section (Visible when Category is APP_UPDATE) -->
-                    <div id="bc-apk-section" style="display: none; background: rgba(147,51,234,0.06); border: 1.5px dashed #9333ea; border-radius: var(--radius-md); padding: 1rem; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                <i data-lucide="smartphone" style="width: 18px; height: 18px; color: #9333ea;"></i>
-                                <strong style="font-size: 0.88rem; color: var(--text-primary);">Android App Release Setup</strong>
-                            </div>
-                            <span class="badge" style="background: rgba(147,51,234,0.15); color: #9333ea; font-size: 0.68rem; font-weight: 700;">Direct Install APK</span>
+                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Message Content *</label>
+                            <textarea id="bc-message" rows="3" placeholder="Enter detailed announcement message..." required style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit; font-size: 0.88rem; resize: vertical;"></textarea>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                        <div class="modal-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
                             <div class="input-group">
-                                <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Version Name *</label>
-                                <input type="text" id="bc-apk-version" placeholder="e.g. v2.1.0" value="v2.1.0" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Category</label>
+                                <select id="bc-type" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                    <option value="BROADCAST">📢 General Broadcast</option>
+                                    <option value="APP_UPDATE">📲 Mobile App APK Update / Release</option>
+                                    <option value="APPROVAL">🛡️ Executive Approval</option>
+                                    <option value="OVERDUE">⚠️ Circulation Overdue</option>
+                                    <option value="EVENT">🎟️ Event & Symposium</option>
+                                    <option value="LAB_SESSION">💻 Lab & Workstation</option>
+                                </select>
                             </div>
                             <div class="input-group">
-                                <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Build Number</label>
-                                <input type="number" id="bc-apk-build" placeholder="e.g. 21" value="21" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Campus</label>
+                                <select id="bc-campus" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                    <option value="ALL">🌐 All Campuses</option>
+                                    ${campusOptions}
+                                </select>
                             </div>
                         </div>
 
-                        <div class="input-group" style="margin-bottom: 0.75rem;">
-                            <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Select APK File (.apk)</label>
-                            <input type="file" id="bc-apk-file" accept=".apk" style="padding: 0.45rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.82rem;">
-                            <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Server will store the file in <code>/downloads/</code> for immediate user 1-click update.</small>
+                        <!-- APK Upload & Release Section (Visible when Category is APP_UPDATE) -->
+                        <div id="bc-apk-section" style="display: none; background: rgba(147,51,234,0.06); border: 1.5px dashed #9333ea; border-radius: var(--radius-md); padding: 1rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                    <i data-lucide="smartphone" style="width: 18px; height: 18px; color: #9333ea;"></i>
+                                    <strong style="font-size: 0.88rem; color: var(--text-primary);">Android App Release Setup</strong>
+                                </div>
+                                <span class="badge" style="background: rgba(147,51,234,0.15); color: #9333ea; font-size: 0.68rem; font-weight: 700;">Direct Install APK</span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                <div class="input-group">
+                                    <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Version Name *</label>
+                                    <input type="text" id="bc-apk-version" placeholder="e.g. v2.1.0" value="v2.1.0" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                </div>
+                                <div class="input-group">
+                                    <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Build Number</label>
+                                    <input type="number" id="bc-apk-build" placeholder="e.g. 21" value="21" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0.75rem;">
+                                <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Select APK File (.apk)</label>
+                                <input type="file" id="bc-apk-file" accept=".apk" style="padding: 0.45rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.82rem;">
+                                <small style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">Direct upload to server (/downloads/) for instant 1-click user downloads.</small>
+                            </div>
+
+                            <div class="input-group">
+                                <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Or Hosted Download Link (Optional)</label>
+                                <input type="url" id="bc-apk-url" placeholder="https://github.com/.../app-release.apk (leave empty if uploading file above)" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                            </div>
                         </div>
 
                         <div class="input-group">
-                            <label style="font-weight: 600; font-size: 0.76rem; margin-bottom: 0.25rem; display: block;">Or Hosted Download Link (Optional)</label>
-                            <input type="url" id="bc-apk-url" placeholder="https://github.com/.../app-release.apk (leave empty if uploading file above)" style="padding: 0.55rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                            <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Target Audience</label>
+                            <select id="bc-audience" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit; font-size: 0.85rem;">
+                                <option value="ALL_MEMBERS">Everyone (Students, Faculty, Staff)</option>
+                                <option value="STUDENTS">Students & Enrolled Patrons Only</option>
+                                <option value="FACULTY">Faculty & Teaching Staff Only</option>
+                                <option value="ADMINS">Librarians & System Administrators Only</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="input-group" style="margin-bottom: 1.25rem;">
-                        <label style="font-weight: 600; font-size: 0.8rem; margin-bottom: 0.35rem; display: block;">Target Audience</label>
-                        <select id="bc-audience" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
-                            <option value="ALL_MEMBERS">Everyone (Students, Faculty, Staff)</option>
-                            <option value="STUDENTS">Students & Enrolled Patrons Only</option>
-                            <option value="FACULTY">Faculty & Teaching Staff Only</option>
-                            <option value="ADMINS">Librarians & System Administrators Only</option>
-                        </select>
-                    </div>
-
-                    <div style="display: flex; justify-content: flex-end; gap: 0.75rem; flex-wrap: wrap;">
-                        <button type="button" class="btn btn-outline" id="btn-cancel-broadcast" style="flex: 1 1 auto; max-width: 140px;">Cancel</button>
-                        <button type="submit" class="btn btn-primary" id="btn-submit-broadcast" style="flex: 2 1 auto;"><i data-lucide="send" style="width: 15px;"></i> Send Push Notification</button>
+                    <!-- Footer (Sticky Bottom) -->
+                    <div style="padding: 0.85rem 1.5rem; border-top: 1px solid var(--border-color); background: var(--bg-surface); display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; flex-shrink: 0;">
+                        <button type="button" class="btn btn-outline" id="btn-cancel-broadcast" style="padding: 0.45rem 1.1rem; font-size: 0.85rem;">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="btn-submit-broadcast" style="padding: 0.45rem 1.25rem; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <i data-lucide="send" style="width: 15px;"></i> Send Push Notification
+                        </button>
                     </div>
                 </form>
             </div>
@@ -1899,71 +1906,123 @@ let floatingBtn = null;
 let activeChatChannelId = 'ch-admin';
 
 function initMessengerWidget() {
-    // 1. Floating Action Launcher Button
+    // 1. Floating Action Launcher Button (Draggable & Sticky Everywhere)
     floatingBtn = document.createElement('button');
     floatingBtn.className = 'floating-messenger-btn';
     floatingBtn.id = 'floating-messenger-btn';
-    floatingBtn.title = 'Institutional Admin Messenger';
+    floatingBtn.title = 'Institutional Admin Messenger (Drag to reposition)';
     floatingBtn.innerHTML = `
         <i data-lucide="message-square" style="width: 24px; height: 24px;"></i>
-        <span style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-success); border: 2px solid white;"></span>
+        <span id="floating-chat-badge" style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-success); border: 2px solid white;"></span>
     `;
 
-    // 2. Chat Window Container
-    messengerWindow = document.createElement('div');
-    messengerWindow.className = 'messenger-window';
-    messengerWindow.id = 'messenger-window';
+    // Restore saved position if present
+    try {
+        const savedPos = JSON.parse(localStorage.getItem('admin_chat_btn_pos'));
+        if (savedPos && typeof savedPos.left === 'number' && typeof savedPos.top === 'number') {
+            const maxX = window.innerWidth - 68;
+            const maxY = window.innerHeight - 68;
+            const clampX = Math.max(12, Math.min(maxX, savedPos.left));
+            const clampY = Math.max(12, Math.min(maxY, savedPos.top));
+            floatingBtn.style.left = clampX + 'px';
+            floatingBtn.style.top = clampY + 'px';
+            floatingBtn.style.bottom = 'auto';
+            floatingBtn.style.right = 'auto';
+        }
+    } catch (e) {}
 
-    messengerWindow.innerHTML = `
-        <!-- Messenger Header -->
-        <div style="padding: 1rem 1.25rem; background: var(--brand-gradient); color: white; display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 0.65rem;">
-                <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700;">
-                    <i data-lucide="shield" style="width: 18px; height: 18px;" id="chat-header-icon"></i>
-                </div>
-                <div>
-                    <div style="font-weight: 800; font-size: 0.95rem; line-height: 1.2;" id="chat-header-name">Admin Helpdesk</div>
-                    <div style="font-size: 0.68rem; opacity: 0.9; display: flex; align-items: center; gap: 0.3rem;">
-                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ade80;"></span> Active • Executive Support
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-ghost btn-icon" id="btn-close-messenger" style="color: white; padding: 0.25rem;">
-                <i data-lucide="x" style="width: 18px; height: 18px;"></i>
-            </button>
-        </div>
+    // Make Floating Button Drag & Drop to anywhere on screen
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let btnInitialLeft = 0;
+    let btnInitialTop = 0;
+    let hasMoved = false;
 
-        <!-- Channels Switcher Bar -->
-        <div style="display: flex; gap: 0.4rem; padding: 0.5rem 0.75rem; background: var(--bg-muted); border-bottom: 1px solid var(--border-color); overflow-x: auto;" id="chat-channels-bar">
-            <!-- Injected dynamically -->
-        </div>
+    const startDrag = (clientX, clientY) => {
+        isDragging = true;
+        hasMoved = false;
+        dragStartX = clientX;
+        dragStartY = clientY;
+        const rect = floatingBtn.getBoundingClientRect();
+        btnInitialLeft = rect.left;
+        btnInitialTop = rect.top;
+        floatingBtn.style.transition = 'none';
+        floatingBtn.style.cursor = 'grabbing';
+    };
 
-        <!-- Chat Conversation Messages Container -->
-        <div id="chat-messages-body" style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; background: var(--bg-surface);">
-            <!-- Injected dynamically -->
-        </div>
+    const doDrag = (clientX, clientY) => {
+        if (!isDragging) return;
+        const dx = clientX - dragStartX;
+        const dy = clientY - dragStartY;
 
-        <!-- Quick Action Chips -->
-        <div style="display: flex; gap: 0.35rem; padding: 0.4rem 0.75rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); overflow-x: auto;">
-            <button class="chat-chip btn btn-outline btn-sm" data-text="Request Lab Workstation Extension" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">⚡ Extend Lab Session</button>
-            <button class="chat-chip btn btn-outline btn-sm" data-text="Book Renewal Inquiry" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">📚 Renew Book</button>
-            <button class="chat-chip btn btn-outline btn-sm" data-text="Report Lost Smartcard / NFC" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">💳 NFC Issue</button>
-        </div>
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+            hasMoved = true;
+        }
 
-        <!-- Chat Input Bar -->
-        <div style="padding: 0.75rem 1rem; background: var(--bg-card); border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; align-items: center;">
-            <input type="text" id="messenger-input" placeholder="Type a message to admin..." style="flex: 1; padding: 0.6rem 0.85rem; border-radius: var(--radius-full); font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-muted); color: var(--text-primary); outline: none;">
-            <button class="btn btn-primary btn-icon" id="btn-send-chat" style="width: 36px; height: 36px; border-radius: 50%; padding: 0;">
-                <i data-lucide="send" style="width: 16px; height: 16px;"></i>
-            </button>
-        </div>
-    `;
+        const maxX = window.innerWidth - 64;
+        const maxY = window.innerHeight - 64;
+        let newLeft = Math.max(10, Math.min(maxX, btnInitialLeft + dx));
+        let newTop = Math.max(10, Math.min(maxY, btnInitialTop + dy));
 
-    document.body.appendChild(floatingBtn);
-    document.body.appendChild(messengerWindow);
+        floatingBtn.style.left = newLeft + 'px';
+        floatingBtn.style.top = newTop + 'px';
+        floatingBtn.style.bottom = 'auto';
+        floatingBtn.style.right = 'auto';
+    };
 
-    // Event listeners
-    floatingBtn.addEventListener('click', window.toggleMessenger);
+    const endDrag = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        floatingBtn.style.transition = '';
+        floatingBtn.style.cursor = 'pointer';
+
+        if (hasMoved) {
+            const rect = floatingBtn.getBoundingClientRect();
+            localStorage.setItem('admin_chat_btn_pos', JSON.stringify({
+                left: Math.round(rect.left),
+                top: Math.round(rect.top)
+            }));
+        }
+    };
+
+    // Mouse Dragging
+    floatingBtn.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
+        startDrag(e.clientX, e.clientY);
+        const onMouseMove = (ev) => doDrag(ev.clientX, ev.clientY);
+        const onMouseUp = () => {
+            endDrag();
+            window.removeEventListener('mousemove', onMouseMove);
+            window.removeEventListener('mouseup', onMouseUp);
+        };
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+    });
+
+    // Touch Dragging for Mobile / Tablets
+    floatingBtn.addEventListener('touchstart', (e) => {
+        const touch = e.touches[0];
+        startDrag(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    floatingBtn.addEventListener('touchmove', (e) => {
+        const touch = e.touches[0];
+        doDrag(touch.clientX, touch.clientY);
+    }, { passive: true });
+
+    floatingBtn.addEventListener('touchend', endDrag);
+
+    // Click handler (Only trigger toggle if not dragged)
+    floatingBtn.addEventListener('click', (e) => {
+        if (hasMoved) {
+            e.preventDefault();
+            e.stopPropagation();
+            hasMoved = false;
+            return;
+        }
+        window.toggleMessenger();
+    });
     document.getElementById('btn-messenger-topbar')?.addEventListener('click', window.toggleMessenger);
     document.getElementById('btn-close-messenger')?.addEventListener('click', window.toggleMessenger);
 
@@ -2000,6 +2059,18 @@ function initMessengerWidget() {
         chip.addEventListener('click', () => {
             chatInput.value = chip.dataset.text;
             handleSendMessage();
+        });
+    });
+
+    
+    document.getElementById('btn-clear-chat')?.addEventListener('click', () => {
+        window.app.confirm("Clear conversation history with the admin desk?", "Clear Chat", () => {
+            const list = JSON.parse(localStorage.getItem('erp_chat_messages') || '[]');
+            const remaining = list.filter(m => m.channel_id !== activeChatChannelId);
+            localStorage.setItem('erp_chat_messages', JSON.stringify(remaining));
+            playSynthSound('success');
+            renderChatMessages();
+            window.app.toast("Conversation cleared", "info");
         });
     });
 

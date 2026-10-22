@@ -20,36 +20,69 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
+        /* Segmented Modern Tab Bar */
         .nfc-studio-tabs {
             display: flex;
-            gap: 0.5rem;
-            border-bottom: 2px solid var(--border-color);
+            gap: 0.35rem;
+            background: var(--bg-muted);
+            padding: 0.35rem;
+            border-radius: var(--radius-lg);
             margin-bottom: 1.5rem;
+            overflow-x: auto;
+            scrollbar-width: none;
+            border: 1px solid var(--border-color);
         }
 
         .nfc-tab-btn {
             background: transparent;
             border: none;
-            padding: 0.75rem 1.25rem;
-            font-size: 0.85rem;
+            padding: 0.6rem 1.15rem;
+            font-size: 0.82rem;
             font-weight: 700;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            display: flex;
+            border-radius: var(--radius-md);
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
+            white-space: nowrap;
             transition: all var(--transition-fast);
         }
 
         .nfc-tab-btn:hover {
             color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .nfc-tab-btn.active {
             color: var(--brand-primary);
-            border-bottom-color: var(--brand-primary);
+            background: var(--bg-card);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-bottom: none;
+        }
+
+        .tab-badge {
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--brand-primary);
+            font-size: 0.72rem;
+            font-weight: 800;
+            padding: 0.1rem 0.5rem;
+            border-radius: 9999px;
+            margin-left: 0.35rem;
+        }
+
+        /* 2-Column Desktop Grid for NFC Studio */
+        .nfc-hub-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(320px, 0.85fr);
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        @media (max-width: 960px) {
+            .nfc-hub-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* ID Card Preview Geometry */
@@ -185,22 +218,22 @@
             
             <main class="main-content" id="main-content">
                 <!-- Page Header -->
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
-                    <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1.25rem; margin-bottom: 1.5rem;">
+                    <div style="flex: 1 1 540px; min-width: 280px;">
                         <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
                             <span class="badge badge-brand" style="font-size: 0.7rem;">HARDWARE & SMART CARDS</span>
                             <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Contactless NFC & Barcode Sync</span>
                         </div>
                         <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">NFC Smart Card & ID Card Studio</h1>
-                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage NFC tag provisioning, hardware cloning, barcode synchronization, custom ID card designing, and high-res vector PDF printing.</p>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem; margin: 0; line-height: 1.45;">Manage NFC tag provisioning, hardware cloning, barcode synchronization, custom ID card designing, and high-res vector PDF printing.</p>
                     </div>
                     
-                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
-                        <button class="btn btn-outline" id="btn-quick-scan-nfc" style="gap: 0.4rem;">
-                            <i data-lucide="radio" style="width: 16px; color: var(--brand-primary);"></i> Scan Hardware NFC
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; flex-shrink: 0; align-items: center;">
+                        <button class="btn btn-outline" id="btn-quick-scan-nfc" style="gap: 0.45rem;">
+                            <i data-lucide="radio" style="width: 15px; color: var(--brand-primary);"></i> Scan Hardware NFC
                         </button>
-                        <button class="btn btn-primary" id="btn-open-designer" style="gap: 0.4rem;">
-                            <i data-lucide="palette" style="width: 16px;"></i> Open ID Card Designer
+                        <button class="btn btn-primary" id="btn-open-designer" style="gap: 0.45rem;">
+                            <i data-lucide="palette" style="width: 15px;"></i> Open ID Card Designer
                         </button>
                     </div>
                 </div>
@@ -208,16 +241,21 @@
                 <!-- Studio Navigation Tabs -->
                 <div class="nfc-studio-tabs">
                     <button class="nfc-tab-btn active" data-tab="tab-nfc-hub">
-                        <i data-lucide="cpu" style="width: 16px;"></i> NFC Tag Provisioning & Barcode Linker
+                        <i data-lucide="cpu" style="width: 16px;"></i>
+                        <span>NFC Provisioning & Barcode</span>
                     </button>
                     <button class="nfc-tab-btn" data-tab="tab-id-generator">
-                        <i data-lucide="id-card" style="width: 16px;"></i> Batch ID Cards & High-Res PDF Print
+                        <i data-lucide="id-card" style="width: 16px;"></i>
+                        <span>Batch ID Cards & PDF Print</span>
                     </button>
                     <button class="nfc-tab-btn" data-tab="tab-template-designer">
-                        <i data-lucide="layout-template" style="width: 16px;"></i> Custom Template & Geometry Designer
+                        <i data-lucide="layout-template" style="width: 16px;"></i>
+                        <span>Custom Template & Geometry</span>
                     </button>
                     <button class="nfc-tab-btn" data-tab="tab-nfc-registry">
-                        <i data-lucide="database" style="width: 16px;"></i> Provisioned Tags Registry (<span id="count-nfc-tags">0</span>)
+                        <i data-lucide="database" style="width: 16px;"></i>
+                        <span>Provisioned Tags Registry</span>
+                        <span class="tab-badge" id="count-nfc-tags">0</span>
                     </button>
                 </div>
 
@@ -225,7 +263,7 @@
                 <!-- TAB 1: NFC TAG PROVISIONING & BARCODE LINKER                   -->
                 <!-- ============================================================== -->
                 <div id="tab-nfc-hub" class="tab-panel-section">
-                    <div class="grid-layout grid-2" style="grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem;">
+                    <div class="nfc-hub-grid">
                         
                         <!-- Left: NFC Terminal & Read/Write Console -->
                         <div class="card card-glass" style="display: flex; flex-direction: column; gap: 1.25rem;">
