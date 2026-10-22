@@ -135,6 +135,7 @@ function renderAdminAccounts() {
     }
 
     tbody.innerHTML = admins.map(a => {
+        const isRootAdmin = a.id === 'admin-root';
         const isSuperAdmin = a.role === 'SUPER_ADMIN';
         const roleLabel = isSuperAdmin ? 'Super Administrator' : (a.role === 'SYSTEM_ADMIN' ? 'System Administrator (Access All)' : (a.role || 'Admin'));
         const campusName = a.campus_id === 'ALL' ? '🌐 Universal (All Campuses)' : (campuses.find(c => c.id === a.campus_id)?.name || a.campus_id || 'Universal');
@@ -157,7 +158,7 @@ function renderAdminAccounts() {
         return `
             <tr>
                 <td class="checkbox-cell" style="text-align: center;">
-                    ${isSuperAdmin ? "" : `<input type="checkbox" class="custom-checkbox row-admin-cb" data-id="${a.id}" ${selectedAdminIds.has(a.id) ? "checked" : ""}>`}
+                    ${isRootAdmin ? "" : `<input type="checkbox" class="custom-checkbox row-admin-cb" data-id="${a.id}" ${selectedAdminIds.has(a.id) ? "checked" : ""}>`}
                 </td>
                 <td>
                     <div style="display: flex; align-items: center; gap: 0.65rem;">
@@ -188,15 +189,21 @@ function renderAdminAccounts() {
                     <span style="font-size: 0.78rem; color: var(--text-muted);">${dateStr}</span>
                 </td>
                 <td style="text-align: right; white-space: nowrap;">
-                    ${isSuperAdmin ? `
-                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; padding: 0.3rem 0.6rem;">Root Superadmin</span>
-                    ` : `
-                        <button class="btn btn-outline btn-sm btn-edit-admin" data-id="${a.id}" title="Edit Admin Credentials" style="font-size: 0.75rem; padding: 0.3rem 0.65rem; margin-right: 0.35rem; color: var(--brand-primary); border-color: rgba(59,130,246,0.3);"><i data-lucide="edit-3" style="width: 13px; height: 13px;"></i> Edit</button>
-                        <button class="btn btn-outline btn-sm btn-dup-admin" data-id="${a.id}" title="Duplicate Admin" style="font-size: 0.75rem; padding: 0.3rem 0.65rem; margin-right: 0.35rem;"><i data-lucide="copy" style="width: 13px; height: 13px;"></i></button>
-                        <button class="btn btn-outline btn-sm btn-delete-admin" data-id="${a.id}" data-name="${adminName}" style="color: #ef4444; border-color: rgba(239,68,68,0.3); font-size: 0.75rem; padding: 0.3rem 0.65rem;">
-                            <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Delete
+                    
+                        <button class="btn btn-outline btn-sm btn-edit-admin" data-id="${a.id}" title="Edit Admin Credentials" style="font-size: 0.75rem; padding: 0.35rem 0.7rem; margin-right: 0.35rem; color: var(--brand-primary); border-color: rgba(59,130,246,0.3); font-weight: 600;">
+                            <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i> Edit
                         </button>
-                    `}
+                        <button class="btn btn-outline btn-sm btn-dup-admin" data-id="${a.id}" title="Duplicate Admin" style="font-size: 0.75rem; padding: 0.35rem 0.65rem; margin-right: 0.35rem;">
+                            <i data-lucide="copy" style="width: 13px; height: 13px;"></i>
+                        </button>
+                        ${isRootAdmin ? `
+                            <span class="badge" style="font-size: 0.68rem; color: var(--text-muted); padding: 0.3rem 0.55rem; background: var(--bg-muted); border: 1px solid var(--border-color); font-weight: 700;">Primary Root</span>
+                        ` : `
+                            <button class="btn btn-outline btn-sm btn-delete-admin" data-id="${a.id}" data-name="${adminName}" style="color: #ef4444; border-color: rgba(239,68,68,0.3); font-size: 0.75rem; padding: 0.35rem 0.7rem; font-weight: 600;">
+                                <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i> Delete
+                            </button>
+                        `}
+
                 </td>
             </tr>
         `;
@@ -204,7 +211,7 @@ function renderAdminAccounts() {
 
     const selectAllAdmins = document.getElementById('select-all-admins');
     if (selectAllAdmins) {
-        const selectableAdmins = admins.filter(a => a.role !== 'SUPER_ADMIN');
+        const selectableAdmins = admins.filter(a => a.id !== 'admin-root');
         selectAllAdmins.checked = selectableAdmins.length > 0 && selectableAdmins.every(a => selectedAdminIds.has(a.id));
         selectAllAdmins.onchange = (e) => {
             if (e.target.checked) selectableAdmins.forEach(a => selectedAdminIds.add(a.id));
@@ -220,7 +227,7 @@ function renderAdminAccounts() {
             else selectedAdminIds.delete(cb.dataset.id);
             updateAdminBulkBar();
             if (selectAllAdmins) {
-                const selectableAdmins = admins.filter(a => a.role !== 'SUPER_ADMIN');
+                const selectableAdmins = admins.filter(a => a.id !== 'admin-root');
                 selectAllAdmins.checked = selectableAdmins.every(a => selectedAdminIds.has(a.id));
             }
         });
