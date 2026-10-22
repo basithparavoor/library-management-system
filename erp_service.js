@@ -93,12 +93,33 @@ function seedInitialErpData() {
         localStorage.setItem(STORAGE_KEYS.EVENT_HALLS, JSON.stringify([]));
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.COMPUTERS)) {
-        localStorage.setItem(STORAGE_KEYS.COMPUTERS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.COMPUTERS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.COMPUTERS) || '[]').length === 0) {
+        const defaultComputers = [
+            { id: 'comp-1', machine_code: 'LAB-PC-01', campus_id: 'camp-main', ip_address: '192.168.1.101', os: 'Ubuntu 24.04 LTS', status: 'AVAILABLE' },
+            { id: 'comp-2', machine_code: 'LAB-PC-02', campus_id: 'camp-main', ip_address: '192.168.1.102', os: 'Ubuntu 24.04 LTS', status: 'AVAILABLE' },
+            { id: 'comp-3', machine_code: 'LAB-PC-03', campus_id: 'camp-main', ip_address: '192.168.1.103', os: 'Windows 11 Pro', status: 'AVAILABLE' },
+            { id: 'comp-4', machine_code: 'LAB-PC-04', campus_id: 'camp-main', ip_address: '192.168.1.104', os: 'Windows 11 Pro', status: 'AVAILABLE' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.COMPUTERS, JSON.stringify(defaultComputers));
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.STAFF)) {
-        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.STUDENTS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.STUDENTS) || '[]').length === 0) {
+        const defaultStudents = [
+            { id: 'std-1', student_id: 'CS-2024-001', name: 'Aaditya Nair', email: 'aaditya@student.tgi.edu', campus_id: 'camp-main', grade: 'Year 3', barcode: 'STD-10001', nfc_tag_id: '04:77:88:99:AA', status: 'ACTIVE' },
+            { id: 'std-2', student_id: 'CS-2024-002', name: 'Fatima Zahra', email: 'fatima@student.tgi.edu', campus_id: 'camp-main', grade: 'Year 2', barcode: 'STD-10002', nfc_tag_id: '04:88:99:AA:BB', status: 'ACTIVE' },
+            { id: 'std-3', student_id: 'CS-2024-003', name: 'Rahul Varma', email: 'rahul@student.tgi.edu', campus_id: 'camp-main', grade: 'Year 4', barcode: 'STD-10003', nfc_tag_id: '04:99:AA:BB:CC', status: 'ACTIVE' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.STUDENTS, JSON.stringify(defaultStudents));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.STAFF) || JSON.parse(localStorage.getItem(STORAGE_KEYS.STAFF) || '[]').length === 0) {
+        const defaultStaff = [
+            { id: 'staff-1', name: 'Dr. A. Sharma', email: 'sharma@tgi.edu', role: 'TEACHER', campus_id: 'camp-main', designation: 'Professor & Dean of Studies', employee_id: 'FAC-101', status: 'ACTIVE', nfc_synced: true, nfc_tag_uid: '04:A1:B2:C3:D4' },
+            { id: 'staff-2', name: 'Prof. Sarah Jenkins', email: 'jenkins@tgi.edu', role: 'TEACHER', campus_id: 'camp-main', designation: 'Senior Lecturer, Computer Science', employee_id: 'FAC-102', status: 'ACTIVE', nfc_synced: true, nfc_tag_uid: '04:B2:C3:D4:E5' },
+            { id: 'staff-3', name: 'Rajesh Kumar', email: 'rajesh.lib@tgi.edu', role: 'LIBRARIAN', campus_id: 'camp-main', designation: 'Chief Librarian', employee_id: 'LIB-201', status: 'ACTIVE', nfc_synced: true, nfc_tag_uid: '04:C3:D4:E5:F6' },
+            { id: 'staff-4', name: 'K. Ramanathan', email: 'ramanathan@tgi.edu', role: 'ADMIN', campus_id: 'camp-main', designation: 'System & Lab Administrator', employee_id: 'ADM-301', status: 'ACTIVE', nfc_synced: true, nfc_tag_uid: '04:D4:E5:F6:A7' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.STAFF, JSON.stringify(defaultStaff));
     }
 
     if (!localStorage.getItem(STORAGE_KEYS.COMPUTER_SESSIONS)) {
@@ -109,12 +130,27 @@ function seedInitialErpData() {
         localStorage.setItem(STORAGE_KEYS.PERIOD_SESSIONS, JSON.stringify([]));
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.EVENTS)) {
-        localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.EVENTS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.EVENTS) || '[]').length === 0) {
+        const defaultEvents = [
+            { id: 'evt-1', title: 'National AI & Autonomous Systems Symposium 2026', campus_id: 'camp-main', hall_id: 'hall-1', hall_name: 'Main Grand Auditorium', date: '2026-11-15', start_time: '10:00', end_time: '16:00', conductor_name: 'Dr. Sharma', capacity: 350, attendees_count: 240, status: 'SCHEDULED' },
+            { id: 'evt-2', title: 'Digital Research & Open-Source Summit', campus_id: 'camp-main', hall_id: 'hall-2', hall_name: 'Executive Seminar Hall A', date: '2026-11-20', start_time: '14:00', end_time: '18:00', conductor_name: 'Prof. Jenkins', capacity: 150, attendees_count: 112, status: 'SCHEDULED' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.EVENTS, JSON.stringify(defaultEvents));
     }
 
-    if (!localStorage.getItem(STORAGE_KEYS.FACILITY_REQUESTS)) {
-        localStorage.setItem(STORAGE_KEYS.FACILITY_REQUESTS, JSON.stringify([]));
+    if (!localStorage.getItem(STORAGE_KEYS.EVENT_HALLS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.EVENT_HALLS) || '[]').length === 0) {
+        const defaultHalls = [
+            { id: 'hall-1', name: 'Main Grand Auditorium', campus_id: 'camp-main', capacity: 350, has_av: true, has_nfc_turnstile: true, status: 'AVAILABLE' },
+            { id: 'hall-2', name: 'Executive Seminar Hall A', campus_id: 'camp-main', capacity: 150, has_av: true, has_nfc_turnstile: true, status: 'AVAILABLE' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.EVENT_HALLS, JSON.stringify(defaultHalls));
+    }
+
+    if (!localStorage.getItem(STORAGE_KEYS.FACILITY_REQUESTS) || JSON.parse(localStorage.getItem(STORAGE_KEYS.FACILITY_REQUESTS) || '[]').length === 0) {
+        const defaultRequests = [
+            { id: 'req-1', title: 'Department Seminar AV Setup', campus_id: 'camp-main', requester_name: 'Dr. A. Sharma', department: 'Computer Science', requested_date: '2026-11-10', status: 'PENDING', notes: 'Requires high-speed ethernet and dual mic setup.' }
+        ];
+        localStorage.setItem(STORAGE_KEYS.FACILITY_REQUESTS, JSON.stringify(defaultRequests));
     }
 
     if (!localStorage.getItem(STORAGE_KEYS.PERMISSIONS)) {
@@ -699,7 +735,32 @@ export class ErpDataService {
 
     // --- ACCESS CONTROL & RBAC PERMISSION MATRIX ---
     getPermissions() {
-        return JSON.parse(localStorage.getItem(STORAGE_KEYS.PERMISSIONS) || '[]');
+        const defaultPermissions = [
+            { role: 'SUPER_ADMIN', can_view_all_campuses: true, can_manage_catalog: true, can_manage_circulation: true, can_manage_members: true, can_manage_labs: true, can_manage_events: true, can_approve_requests: true, can_access_reports: true, can_configure_rbac: true },
+            { role: 'INSTITUTION_HEAD', can_view_all_campuses: true, can_manage_catalog: false, can_manage_circulation: false, can_manage_members: true, can_manage_labs: true, can_manage_events: true, can_approve_requests: true, can_access_reports: true, can_configure_rbac: false },
+            { role: 'CAMPUS_HEAD', can_view_all_campuses: false, can_manage_catalog: false, can_manage_circulation: true, can_manage_members: true, can_manage_labs: true, can_manage_events: true, can_approve_requests: true, can_access_reports: true, can_configure_rbac: false },
+            { role: 'TEACHER', can_view_all_campuses: false, can_manage_catalog: false, can_manage_circulation: false, can_manage_members: false, can_manage_labs: false, can_manage_events: false, can_take_attendance: true, can_request_facilities: true, can_access_reports: false },
+            { role: 'LIBRARIAN', can_view_all_campuses: false, can_manage_catalog: true, can_manage_circulation: true, can_manage_members: true, can_manage_labs: false, can_manage_events: false, can_approve_requests: false, can_access_reports: true },
+            { role: 'LAB_ADMIN', can_view_all_campuses: false, can_manage_catalog: false, can_manage_circulation: false, can_manage_members: false, can_manage_labs: true, can_manage_events: false, can_approve_requests: false, can_access_reports: true },
+            { role: 'EVENT_CONDUCTOR', can_view_all_campuses: false, can_manage_catalog: false, can_manage_circulation: false, can_manage_members: false, can_manage_labs: false, can_manage_events: true, can_scan_tickets: true, can_access_reports: false },
+            { role: 'STUDENT', can_view_all_campuses: false, can_opac_search: true, can_view_loans: true, can_view_lab_availability: true, can_view_events: true }
+        ];
+
+        let list = [];
+        try {
+            list = JSON.parse(localStorage.getItem(STORAGE_KEYS.PERMISSIONS) || '[]');
+        } catch(e) {}
+
+        if (list.length < 8) {
+            defaultPermissions.forEach(def => {
+                if (!list.some(p => p.role === def.role)) {
+                    list.push(def);
+                }
+            });
+            localStorage.setItem(STORAGE_KEYS.PERMISSIONS, JSON.stringify(list));
+        }
+
+        return list;
     }
 
     updatePermission(role, field, value) {

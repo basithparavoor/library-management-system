@@ -29,44 +29,74 @@
     border-color: var(--brand-glow);
 }
 
-/* Stat Cards */
+/* Stat Cards (Master Glassmorphic KPI System) */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
 .stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.4rem;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 1.25rem 1.5rem;
-    overflow: hidden;
+    gap: 1.15rem;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease;
     position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
 }
 
-.stat-card::after {
-    content: '';
-    position: absolute;
-    right: -20px;
-    bottom: -20px;
-    width: 90px;
-    height: 90px;
-    background: var(--stat-glow, rgba(59, 130, 246, 0.08));
-    border-radius: 50%;
-    filter: blur(20px);
-    pointer-events: none;
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.07);
+    border-color: rgba(59, 130, 246, 0.35);
 }
 
-.stat-icon-wrapper {
+.stat-icon, .stat-icon-wrapper {
     width: 48px;
     height: 48px;
-    border-radius: var(--radius-sm);
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: var(--stat-bg, rgba(59, 130, 246, 0.1));
-    color: var(--stat-color, var(--brand-primary));
     flex-shrink: 0;
-    transition: transform var(--transition-normal);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.stat-card:hover .stat-icon-wrapper {
+.stat-icon i, .stat-icon svg, .stat-icon-wrapper i, .stat-icon-wrapper svg {
+    width: 22px;
+    height: 22px;
+}
+
+.stat-card:hover .stat-icon, .stat-card:hover .stat-icon-wrapper {
     transform: scale(1.1) rotate(4deg);
+}
+
+.stat-label {
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 0.25rem;
+    line-height: 1.2;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+    line-height: 1.1;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
 /* Buttons */

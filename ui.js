@@ -1911,10 +1911,71 @@ function initMessengerWidget() {
     floatingBtn.className = 'floating-messenger-btn';
     floatingBtn.id = 'floating-messenger-btn';
     floatingBtn.title = 'Institutional Admin Messenger (Drag to reposition)';
+    floatingBtn.style.cssText = 'position: fixed; bottom: 1.5rem; right: 1.5rem; width: 56px; height: 56px; border-radius: 50%; background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px var(--brand-glow), 0 4px 12px rgba(0,0,0,0.2); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; z-index: 9999;';
     floatingBtn.innerHTML = `
         <i data-lucide="message-square" style="width: 24px; height: 24px;"></i>
         <span id="floating-chat-badge" style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: var(--color-success); border: 2px solid white;"></span>
     `;
+
+    // 2. Chat Window Container
+    messengerWindow = document.createElement('div');
+    messengerWindow.className = 'messenger-window';
+    messengerWindow.id = 'messenger-window';
+    messengerWindow.style.zIndex = '10000';
+
+    messengerWindow.innerHTML = `
+        <!-- Messenger Header -->
+        <div style="padding: 1rem 1.25rem; background: var(--brand-gradient); color: white; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <div style="width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                    <i data-lucide="shield" style="width: 18px; height: 18px;" id="chat-header-icon"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 800; font-size: 0.95rem; line-height: 1.2;" id="chat-header-name">Admin Helpdesk</div>
+                    <div style="font-size: 0.68rem; opacity: 0.9; display: flex; align-items: center; gap: 0.3rem;">
+                        <span style="width: 6px; height: 6px; border-radius: 50%; background: #4ade80;"></span> Active • Executive Support
+                    </div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <button class="btn btn-ghost btn-icon" id="btn-clear-chat" title="Clear Conversation" style="color: white; padding: 0.25rem; opacity: 0.85;">
+                    <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+                </button>
+                <button class="btn btn-ghost btn-icon" id="btn-close-messenger" style="color: white; padding: 0.25rem;">
+                    <i data-lucide="x" style="width: 18px; height: 18px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Channels Switcher Bar -->
+        <div style="display: flex; gap: 0.4rem; padding: 0.5rem 0.75rem; background: var(--bg-muted); border-bottom: 1px solid var(--border-color); overflow-x: auto;" id="chat-channels-bar">
+            <!-- Injected dynamically -->
+        </div>
+
+        <!-- Chat Conversation Messages Container -->
+        <div id="chat-messages-body" style="flex: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; background: var(--bg-surface);">
+            <!-- Injected dynamically -->
+        </div>
+
+        <!-- Quick Action Chips -->
+        <div style="display: flex; gap: 0.35rem; padding: 0.4rem 0.75rem; background: var(--bg-surface); border-top: 1px solid var(--border-color); overflow-x: auto;">
+            <button class="chat-chip btn btn-outline btn-sm" data-text="Request Lab Workstation Extension" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">⚡ Extend Lab Session</button>
+            <button class="chat-chip btn btn-outline btn-sm" data-text="Book Renewal Inquiry" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">📚 Renew Book</button>
+            <button class="chat-chip btn btn-outline btn-sm" data-text="Report Lost Smartcard / NFC" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; white-space: nowrap; border-radius: var(--radius-full);">💳 NFC Issue</button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div style="padding: 0.75rem 1rem; background: var(--bg-card); border-top: 1px solid var(--border-color); display: flex; gap: 0.5rem; align-items: center;">
+            <input type="text" id="messenger-input" placeholder="Type a message to admin..." style="flex: 1; padding: 0.6rem 0.85rem; border-radius: var(--radius-full); font-size: 0.85rem; border: 1px solid var(--border-color); background: var(--bg-muted); color: var(--text-primary); outline: none;">
+            <button class="btn btn-primary btn-icon" id="btn-send-chat" style="width: 36px; height: 36px; border-radius: 50%; padding: 0;">
+                <i data-lucide="send" style="width: 16px; height: 16px;"></i>
+            </button>
+        </div>
+    `;
+
+    // Ensure elements are appended to body
+    document.body.appendChild(floatingBtn);
+    document.body.appendChild(messengerWindow);
 
     // Restore saved position if present
     try {
@@ -2023,8 +2084,21 @@ function initMessengerWidget() {
         }
         window.toggleMessenger();
     });
+
     document.getElementById('btn-messenger-topbar')?.addEventListener('click', window.toggleMessenger);
     document.getElementById('btn-close-messenger')?.addEventListener('click', window.toggleMessenger);
+
+    // Clear chat listener
+    document.getElementById('btn-clear-chat')?.addEventListener('click', () => {
+        window.app.confirm("Clear conversation history with the admin desk?", "Clear Chat", () => {
+            const list = JSON.parse(localStorage.getItem('erp_chat_messages') || '[]');
+            const remaining = list.filter(m => m.channel_id !== activeChatChannelId);
+            localStorage.setItem('erp_chat_messages', JSON.stringify(remaining));
+            playSynthSound('success');
+            renderChatMessages();
+            window.app.toast("Conversation cleared", "info");
+        });
+    });
 
     // Send chat listener
     const sendBtn = document.getElementById('btn-send-chat');
@@ -2034,7 +2108,6 @@ function initMessengerWidget() {
         const text = chatInput.value.trim();
         if (!text) return;
 
-        // Current user info fallback
         const userName = localStorage.getItem('user_name') || 'Member';
         const userId = localStorage.getItem('user_id') || 'MEM-001';
 
@@ -2043,7 +2116,6 @@ function initMessengerWidget() {
         playSynthSound('success');
         renderChatMessages();
 
-        // Simulate intelligent Admin / Helpdesk auto-reply after 1.2 seconds
         setTimeout(() => {
             simulateAdminResponse(text);
         }, 1200);
@@ -2062,21 +2134,11 @@ function initMessengerWidget() {
         });
     });
 
-    
-    document.getElementById('btn-clear-chat')?.addEventListener('click', () => {
-        window.app.confirm("Clear conversation history with the admin desk?", "Clear Chat", () => {
-            const list = JSON.parse(localStorage.getItem('erp_chat_messages') || '[]');
-            const remaining = list.filter(m => m.channel_id !== activeChatChannelId);
-            localStorage.setItem('erp_chat_messages', JSON.stringify(remaining));
-            playSynthSound('success');
-            renderChatMessages();
-            window.app.toast("Conversation cleared", "info");
-        });
-    });
-
     window.addEventListener('chatMessageSent', () => {
         if (messengerWindow.classList.contains('active')) renderChatMessages();
     });
+
+    if (window.lucide) lucide.createIcons();
 }
 
 window.toggleMessenger = function() {
