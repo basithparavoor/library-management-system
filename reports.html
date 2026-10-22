@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Reports & Audits - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">ANALYTICS ENGINE</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Multi-Campus Audit</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Institutional Dynamic Reports</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Generate computer workstation logs, class attendance registers, circulation ledgers, and hall utilization.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-print-report" onclick="window.print()"><i data-lucide="printer" style="width: 16px;"></i> Print PDF Report</button>
+                        <button class="btn btn-primary" id="btn-export-csv"><i data-lucide="download" style="width: 16px;"></i> Export Data (CSV)</button>
+                    </div>
+                </div>
+
+                <!-- Comprehensive Multi-Filter Bar -->
+                <div class="card card-glass" style="display: flex; gap: 1rem; align-items: flex-end; flex-wrap: wrap; padding: 1.25rem 1.5rem;">
+                    <div class="input-group" style="margin-bottom: 0; min-width: 250px; flex: 1.5;">
+                        <label>Report Category</label>
+                        <select id="report-type">
+                            <option value="computers">1. Computer Lab Usage & Duration Logs</option>
+                            <option value="attendance">2. Class Period Attendance Registers</option>
+                            <option value="events">3. Event Halls & Auditorium Bookings</option>
+                            <option value="overdue">4. Overdue Books & Member Fines</option>
+                            <option value="active_loans">5. Active Circulation & Loans</option>
+                            <option value="campus_summary">6. Multi-Campus Executive Summary</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 0; min-width: 150px; flex: 1;" id="group-timeframe">
+                        <label>Timeframe Period</label>
+                        <select id="report-timeframe">
+                            <option value="all">All Records</option>
+                            <option value="day">Today (24 Hours)</option>
+                            <option value="week">Past 7 Days (Week)</option>
+                            <option value="month">Past 30 Days (Month)</option>
+                            <option value="custom">Custom Date Range</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 0; display: none;" id="group-start-date">
+                        <label>Start Date</label>
+                        <input type="date" id="report-start-date">
+                    </div>
+
+                    <div class="input-group" style="margin-bottom: 0; display: none;" id="group-end-date">
+                        <label>End Date</label>
+                        <input type="date" id="report-end-date">
+                    </div>
+
+                    <button class="btn btn-primary" id="btn-generate" style="padding: 0.75rem 1.5rem; height: 42px;">
+                        <i data-lucide="bar-chart-2" style="width: 16px;"></i> Generate
+                    </button>
+                </div>
+
+                <!-- KPI Metric Row for Active Report -->
+                <div id="report-kpi-row" class="stats-grid" style="display: none;">
+                    <!-- Injected dynamically -->
+                </div>
+
+                <!-- Report Data Table -->
+                <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div id="report-header-info">
+                            <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;" id="report-table-title">Report Data Preview</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;" id="report-table-subtitle">Select filters above and execute generation</p>
+                        </div>
+                        <div id="report-record-count" style="font-weight: 700; font-size: 0.85rem; color: var(--brand-primary);"></div>
+                    </div>
+
+                    <div class="table-responsive" style="min-height: 400px;">
+                        <table id="report-table">
+                            <thead id="report-thead">
+                                <tr>
+                                    <th>Column Preview</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-tbody">
+                                <tr>
+                                    <td style="padding: 3.5rem 1rem; text-align: center; color: var(--text-muted);">
+                                        <i data-lucide="bar-chart-3" style="width: 36px; height: 36px; opacity: 0.4; margin-bottom: 0.5rem;"></i>
+                                        <div style="font-weight: 600; font-size: 1rem; color: var(--text-primary);">No report generated yet</div>
+                                        <p style="font-size: 0.85rem; margin-top: 0.25rem;">Select a report category above and click "Generate".</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="reports.js"></script>
+</body>
+</html>

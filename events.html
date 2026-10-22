@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Halls & Auditoriums - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">FACILITY ERP</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Auditoriums & Event Halls</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Event Halls & Symposiums</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Auditorium booking management, conductor portals, NFC/QR ticket scanning, and attendee registers.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-open-conductor-desk"><i data-lucide="scan-line" style="width: 16px;"></i> Conductor Scanner Desk</button>
+                        <button class="btn btn-primary" id="btn-new-event"><i data-lucide="plus" style="width: 16px;"></i> Schedule Event</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                            <i data-lucide="building"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Event Halls & Audits</div>
+                            <div class="stat-value" id="kpi-total-halls">3</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                            <i data-lucide="calendar-days"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Scheduled Events</div>
+                            <div class="stat-value" id="kpi-scheduled-events">2</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                            <i data-lucide="users"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Registered Attendees</div>
+                            <div class="stat-value" id="kpi-total-attendees">552</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                            <i data-lucide="radio"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">NFC/QR Ticket Scan</div>
+                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-success);">ACTIVE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section Navigation Tabs -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                    <button class="btn btn-primary" id="tab-events-btn" style="padding: 0.5rem 1.25rem;"><i data-lucide="calendar" style="width: 15px;"></i> Event Schedules</button>
+                    <button class="btn btn-outline" id="tab-halls-btn" style="padding: 0.5rem 1.25rem;"><i data-lucide="door-open" style="width: 15px;"></i> Venues & Capacities</button>
+                    <button class="btn btn-outline" id="tab-conductor-btn" style="padding: 0.5rem 1.25rem;"><i data-lucide="qr-code" style="width: 15px;"></i> Conductor Scanner Desk</button>
+                </div>
+
+                <!-- TAB 1: Events Schedule List -->
+                <div id="section-events" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; gap: 0.5rem; flex: 1; max-width: 450px;">
+                            <div class="input-group" style="margin-bottom: 0; width: 100%;">
+                                <input type="text" id="event-search" placeholder="Search events by title, organizer, conductor, or hall...">
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <select id="event-status-filter" style="padding: 0.55rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+                                <option value="ALL">All Statuses</option>
+                                <option value="APPROVED">Approved & Live</option>
+                                <option value="PENDING_APPROVAL">Pending Approval</option>
+                                <option value="COMPLETED">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="events-card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- TAB 2: Halls & Venues -->
+                <div id="section-halls" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Auditoriums & Event Halls</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Campus venues, seating limits, and AV facility specifications</p>
+                        </div>
+                        <button class="btn btn-primary" id="btn-new-hall"><i data-lucide="plus" style="width: 16px;"></i> Register Venue / Hall</button>
+                    </div>
+                    <div id="halls-card-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- TAB 3: Conductor Ticket Scanner Desk -->
+                <div id="section-conductor" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; align-items: start;">
+                        <!-- Scanner Input Box -->
+                        <div class="card card-glass">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Ticket Check-in Desk</h3>
+                                <span class="badge badge-brand" id="conductor-event-badge">Active Event</span>
+                            </div>
+
+                            <div class="input-group">
+                                <label>Target Event Session</label>
+                                <select id="conductor-event-select" style="width: 100%;">
+                                    <!-- Injected dynamically -->
+                                </select>
+                            </div>
+
+                            <!-- Fast NFC Tap / Barcode Input -->
+                            <div class="input-group">
+                                <label>Scan Ticket QR / NFC Tag / Student ID</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="conductor-ticket-input" placeholder="Tap NFC or Scan Barcode..." autofocus>
+                                    <button class="btn btn-primary" id="btn-conductor-checkin"><i data-lucide="check" style="width: 16px;"></i></button>
+                                </div>
+                            </div>
+
+                            <!-- Hardware NFC Reader Action -->
+                            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem;">
+                                <button class="btn btn-outline" id="btn-conductor-nfc" style="flex: 1; font-size: 0.8rem;"><i data-lucide="radio" style="width: 15px;"></i> Tap Smartcard (NFC)</button>
+                                <button class="btn btn-outline" id="btn-conductor-camera" style="flex: 1; font-size: 0.8rem;"><i data-lucide="camera" style="width: 15px;"></i> Camera QR</button>
+                            </div>
+
+                            <!-- Camera scanner viewport -->
+                            <div id="conductor-qr-reader" style="width: 100%; border-radius: var(--radius-md); overflow: hidden; display: none; margin-bottom: 1rem;"></div>
+
+                            <!-- Feedback Toast in Box -->
+                            <div id="conductor-feedback" style="padding: 0.85rem; border-radius: var(--radius-md); background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.2); font-size: 0.85rem; display: none;">
+                                <div id="conductor-feedback-text" style="font-weight: 600;"></div>
+                            </div>
+                        </div>
+
+                        <!-- Live Attendee Register Table -->
+                        <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                            <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Verified Attendee Register</h3>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Real-time admittance logs & seat verification</p>
+                                </div>
+                                <button class="btn btn-outline" id="btn-register-walkin" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;"><i data-lucide="user-plus" style="width: 14px;"></i> Register Walk-in</button>
+                            </div>
+
+                            <div class="table-responsive" style="min-height: 380px;">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket #</th>
+                                            <th>Attendee Name</th>
+                                            <th>Member ID</th>
+                                            <th>Role</th>
+                                            <th>Status</th>
+                                            <th>Admit Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="conductor-attendees-tbody">
+                                        <!-- Injected dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL: Schedule / Edit Event -->
+                <div id="modal-event" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 600px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="modal-event-title">Schedule Institutional Event</h3>
+                            <button class="modal-close" id="btn-close-event-modal">&times;</button>
+                        </div>
+                        <form id="form-event" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <input type="hidden" id="ev-id" value="">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Event Title *</label>
+                                <input type="text" id="ev-title" placeholder="e.g. AI & Robotics Symposium 2026" required>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Campus Venue</label>
+                                    <select id="ev-campus" required>
+                                        <!-- Injected dynamically -->
+                                    </select>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Auditorium / Hall *</label>
+                                    <select id="ev-hall" required>
+                                        <!-- Injected dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Start Date & Time *</label>
+                                    <input type="datetime-local" id="ev-start" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>End Date & Time *</label>
+                                    <input type="datetime-local" id="ev-end" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Organizing Department / Council</label>
+                                    <input type="text" id="ev-organizer" placeholder="e.g. School of Computing" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Conductor / Lead Host *</label>
+                                    <input type="text" id="ev-conductor" placeholder="e.g. Lead Host / Speaker Name" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Max Capacity / Seat Limit</label>
+                                    <input type="number" id="ev-capacity" placeholder="e.g. 500" value="300">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Status</label>
+                                    <select id="ev-status">
+                                        <option value="APPROVED">Approved & Live</option>
+                                        <option value="PENDING_APPROVAL">Pending Approval</option>
+                                        <option value="COMPLETED">Completed</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Description & Agenda</label>
+                                <textarea id="ev-desc" rows="3" placeholder="Overview of speakers, itinerary, topics..."></textarea>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-event">Cancel</button>
+                                <button type="submit" class="btn btn-primary" id="btn-submit-event"><i data-lucide="check" style="width: 16px;"></i> Save Event</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL: Add / Edit Venue (Hall) -->
+                <div id="modal-hall" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 540px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="modal-hall-title">Register Auditorium / Venue</h3>
+                            <button class="modal-close" id="btn-close-hall-modal">&times;</button>
+                        </div>
+                        <form id="form-hall" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <input type="hidden" id="hall-id" value="">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Venue / Hall Name *</label>
+                                <input type="text" id="hall-name" placeholder="e.g. Dr. APJ Abdul Kalam Auditorium" required>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Hall Code *</label>
+                                    <input type="text" id="hall-code" placeholder="e.g. AUD-MMC-01" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Seating Capacity *</label>
+                                    <input type="number" id="hall-capacity" placeholder="e.g. 500" value="200" required min="1">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Campus Assignment</label>
+                                    <select id="hall-campus" required>
+                                        <!-- Injected dynamically -->
+                                    </select>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Status</label>
+                                    <select id="hall-status">
+                                        <option value="AVAILABLE">AVAILABLE</option>
+                                        <option value="MAINTENANCE">MAINTENANCE</option>
+                                        <option value="BOOKED">BOOKED</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Physical Location / Floor</label>
+                                <input type="text" id="hall-location" placeholder="e.g. Central Block, 3rd Floor">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>AV Facilities & Amenities</label>
+                                <textarea id="hall-amenities" rows="2" placeholder="e.g. 4K Projector, Surround Sound, Stage Lights, Live Streaming"></textarea>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-hall">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Venue</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL: Register Walk-in Attendee -->
+                <div id="modal-walkin" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 460px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Register Event Attendee</h3>
+                            <button class="modal-close" id="btn-close-walkin-modal">&times;</button>
+                        </div>
+                        <form id="form-walkin" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Student / Employee ID *</label>
+                                <input type="text" id="walkin-id" placeholder="e.g. STU-1001 or EMP-001" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Full Name *</label>
+                                <input type="text" id="walkin-name" placeholder="e.g. Attendee Full Name" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Email Address</label>
+                                <input type="email" id="walkin-email" placeholder="e.g. attendee@institution.edu">
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Role</label>
+                                <select id="walkin-role">
+                                    <option value="STUDENT">Student</option>
+                                    <option value="FACULTY">Faculty / Staff</option>
+                                    <option value="GUEST">External Guest</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-walkin">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="ticket" style="width: 16px;"></i> Issue Ticket & Admit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="events.js"></script>
+</body>
+</html>

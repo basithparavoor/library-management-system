@@ -1,0 +1,232 @@
+<header class="app-topbar">
+    
+    <!-- LEFT: CAMPUS SWITCHER & ACADEMIC PERIOD -->
+    <div class="topbar-nav-group">
+        <!-- Mobile Hamburger Menu Button -->
+        <button id="mobile-menu-btn" class="btn btn-ghost btn-icon" style="display: none; padding: 0.35rem;" aria-label="Toggle navigation menu">
+            <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+        </button>
+
+        <!-- Campus Switcher Selector -->
+        <div class="topbar-campus-chip" title="Switch Active Sub-Campus">
+            <i data-lucide="building-2" style="width: 14px; height: 14px; color: var(--brand-primary); flex-shrink: 0;"></i>
+            <select id="topbar-campus-select" aria-label="Select Campus">
+                <option value="ALL">All Campuses</option>
+            </select>
+            <i data-lucide="chevron-down" style="width: 11px; height: 11px; color: var(--text-muted); flex-shrink: 0; pointer-events: none;"></i>
+        </div>
+
+        <!-- Academic Period Status Pill -->
+        <div class="topbar-period-wrapper" style="display: flex; align-items: center; gap: 0.35rem; background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-full); padding: 0.25rem 0.6rem;">
+            <span class="pulse-dot"></span>
+            <span id="topbar-period-pill" style="font-size: 0.72rem; font-weight: 700; color: var(--text-secondary); white-space: nowrap;">Period Session</span>
+        </div>
+    </div>
+
+    <!-- CENTER: OMNI-SEARCH & FAST ACTION LAUNCHER -->
+    <div style="display: flex; align-items: center; gap: 0.45rem; flex: 1 1 auto; justify-content: center; max-width: 420px; min-width: 0; margin: 0 0.4rem;">
+        <!-- Global Omni-Search -->
+        <div class="topbar-search-box" id="topbar-search-trigger" onclick="window.toggleCommandPalette()" style="flex: 1 1 auto; min-width: 120px; max-width: 260px;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; color: var(--text-secondary); min-width: 0; overflow: hidden;">
+                <i data-lucide="search" style="width: 14px; height: 14px; flex-shrink: 0;"></i> 
+                <span class="topbar-search-text" style="font-size: 0.78rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Search books, patrons, labs...</span> 
+            </div>
+            <kbd style="background: var(--bg-muted); color: var(--text-muted); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.62rem; font-weight: 700; border: 1px solid var(--border-color); font-family: var(--font-mono); flex-shrink: 0;">Ctrl K</kbd>
+        </div>
+
+        <!-- Quick Create Action Launcher -->
+        <div style="position: relative; flex-shrink: 0;" id="quick-action-wrapper">
+            <button class="btn btn-primary btn-sm" id="btn-quick-create-menu" style="border-radius: var(--radius-full); padding: 0.35rem 0.7rem; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.3rem; box-shadow: var(--shadow-xs);">
+                <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                <span class="topbar-create-text">Quick Action</span>
+                <i data-lucide="chevron-down" style="width: 11px; height: 11px; opacity: 0.8;"></i>
+            </button>
+
+            <!-- Quick Action Popover -->
+            <div class="topbar-popover" id="popover-quick-actions" style="width: 260px;">
+                <div style="padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--border-color); font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em;">
+                    ⚡ Instant ERP Actions
+                </div>
+                <a href="javascript:void(0)" onclick="window.openBroadcastNotificationModal()" class="popover-item" style="color: var(--brand-primary); font-weight: 700;">
+                    <i data-lucide="megaphone" style="width: 15px; color: var(--brand-primary);"></i> Broadcast Notification
+                </a>
+                <a href="nfc_id_cards.html" class="popover-item" style="color: #6366f1; font-weight: 700;">
+                    <i data-lucide="contact-2" style="width: 15px; color: #6366f1;"></i> NFC & ID Card Studio
+                </a>
+                <a href="circulation.html?action=issue" class="popover-item">
+                    <i data-lucide="book-up" style="width: 15px; color: var(--brand-primary);"></i> Issue Book to Member
+                </a>
+                <a href="circulation.html?action=return" class="popover-item">
+                    <i data-lucide="book-down" style="width: 15px; color: var(--color-success);"></i> Return Book Drop-Box
+                </a>
+                <a href="books.html" class="popover-item">
+                    <i data-lucide="book-plus" style="width: 15px; color: var(--brand-accent);"></i> Register New Catalog Book
+                </a>
+                <a href="students.html" class="popover-item">
+                    <i data-lucide="user-plus" style="width: 15px; color: var(--color-warning);"></i> Register Student Member
+                </a>
+                <a href="hallpass.html" class="popover-item">
+                    <i data-lucide="footprints" style="width: 15px; color: #06b6d4;"></i> Issue Classroom Hall Pass
+                </a>
+                <a href="events.html" class="popover-item">
+                    <i data-lucide="ticket" style="width: 15px; color: #ec4899;"></i> Book Auditorium Event
+                </a>
+                <a href="barcode_printer.html" class="popover-item">
+                    <i data-lucide="printer" style="width: 15px; color: var(--text-primary);"></i> Print Barcode Labels
+                </a>
+                <a href="academic_structure.html" class="popover-item">
+                    <i data-lucide="network" style="width: 15px; color: var(--brand-primary);"></i> Manage Academic Structure
+                </a>
+                <a href="library_storage.html" class="popover-item">
+                    <i data-lucide="layers" style="width: 15px; color: #8b5cf6;"></i> Manage Library Storage
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT: HARDWARE STATUS, UTILITIES, LIVE CLOCK & USER PROFILE -->
+    <div class="topbar-nav-group" style="gap: 0.35rem;">
+        <!-- Hardware Health Indicator -->
+        <div style="position: relative;" id="hardware-status-wrapper">
+            <button id="btn-nfc-tap-topbar" class="topbar-btn-icon" title="Hardware Connectivity & NFC Reader">
+                <i data-lucide="radio" style="width: 14px; height: 14px; color: var(--brand-primary);"></i>
+            </button>
+
+            <!-- Hardware Diagnostic Popover -->
+            <div class="topbar-popover" id="popover-hardware-diag" style="width: 270px; padding: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.4rem;">
+                    <strong style="font-size: 0.85rem; color: var(--text-primary);">Hardware Status</strong>
+                    <span class="badge badge-success" style="font-size: 0.62rem;">Live Ready</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i data-lucide="radio" style="width: 12px;"></i> Web NFC:</span>
+                        <strong style="color: var(--color-success);">Ready</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i data-lucide="scan" style="width: 12px;"></i> Barcode Wedge:</span>
+                        <strong style="color: var(--color-success);">Connected</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: var(--text-secondary); display: flex; align-items: center; gap: 0.35rem;"><i data-lucide="wifi" style="width: 12px;"></i> Cloud DB Sync:</span>
+                        <strong style="color: var(--brand-primary);">Online</strong>
+                    </div>
+                </div>
+                <div style="margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.35rem;">
+                    <button class="btn btn-outline btn-sm" style="flex: 1; font-size: 0.72rem; padding: 0.3rem;" onclick="window.hardware?.openUniversalInspector()">
+                        <i data-lucide="search" style="width: 12px;"></i> Inspect
+                    </button>
+                    <a href="settings.html" class="btn btn-primary btn-sm" style="flex: 1; font-size: 0.72rem; padding: 0.3rem;">
+                        <i data-lucide="sliders" style="width: 12px;"></i> Test Pad
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Keyboard Shortcuts Help -->
+        <button id="btn-shortcuts-help" class="topbar-btn-icon" title="Keyboard Shortcuts Guide (Press ? or F1)" onclick="window.shortcuts?.showHelpModal()">
+            <i data-lucide="keyboard" style="width: 14px; height: 14px;"></i>
+        </button>
+
+        <!-- Fullscreen Toggle -->
+        <button id="btn-fullscreen-toggle" class="topbar-btn-icon" title="Toggle Fullscreen View">
+            <i data-lucide="maximize" style="width: 14px; height: 14px;"></i>
+        </button>
+
+        <!-- Notification Bell with Counter -->
+        <div style="position: relative;">
+            <button id="btn-notifications-topbar" class="topbar-btn-icon" title="Notifications & Alerts">
+                <i data-lucide="bell" style="width: 14px; height: 14px;"></i>
+                <span id="topbar-notif-badge" class="topbar-badge-counter" style="display: none;">0</span>
+            </button>
+        </div>
+
+        <!-- Admin Messenger Desk -->
+        <div style="position: relative;">
+            <button id="btn-messenger-topbar" class="topbar-btn-icon" title="Executive Admin Messenger" style="color: var(--brand-primary);">
+                <i data-lucide="message-square" style="width: 14px; height: 14px;"></i>
+                <span id="topbar-chat-badge" style="position: absolute; top: 2px; right: 2px; width: 7px; height: 7px; border-radius: 50%; background: var(--color-success); border: 1.5px solid var(--bg-surface); display: block;"></span>
+            </button>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="topbar-btn-icon" title="Toggle Dark/Light Mode (Alt+T)">
+            <i data-lucide="moon" style="width: 14px; height: 14px;"></i>
+        </button>
+
+        <!-- Live Monospace Clock -->
+        <div id="topbar-clock" class="topbar-clock-box" title="Institutional Server Time">
+            <i data-lucide="clock" style="width: 12px; height: 12px; color: var(--brand-primary); flex-shrink: 0;"></i>
+            <span id="topbar-clock-time">--:--:--</span>
+        </div>
+
+        <!-- User Profile Dropdown -->
+        <div style="position: relative; flex-shrink: 0;" id="user-profile-menu-wrapper">
+            <div id="topbar-user-profile-btn" class="topbar-profile-chip" title="Account & Governance">
+                <div id="topbar-user-avatar" style="width: 26px; height: 26px; border-radius: 50%; background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.75rem; box-shadow: 0 2px 4px var(--brand-glow); flex-shrink: 0;">
+                    A
+                </div>
+                <span id="topbar-user-name" class="user-name-label" style="font-size: 0.78rem; font-weight: 700; color: var(--text-primary); white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;">Admin</span>
+                <i data-lucide="chevron-down" style="width: 11px; height: 11px; color: var(--text-muted); flex-shrink: 0;"></i>
+            </div>
+
+            <!-- Profile Popover Dropdown -->
+            <div class="topbar-popover" id="popover-user-profile" style="width: 265px; right: 0;">
+                <!-- Profile Header -->
+                <div style="padding: 0.85rem 1rem; background: var(--bg-surface); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.65rem;">
+                    <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1rem; box-shadow: 0 2px 6px var(--brand-glow); flex-shrink: 0;">
+                        A
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 800; font-size: 0.88rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Administrator</div>
+                        <div style="font-size: 0.7rem; color: var(--brand-primary); font-weight: 600;">Super Admin</div>
+                    </div>
+                </div>
+
+                <!-- Links -->
+                <div style="padding: 0.35rem 0;">
+                    <a href="settings.html" class="popover-item">
+                        <i data-lucide="settings" style="width: 15px;"></i> System Settings & Hotkeys
+                    </a>
+                    <a href="access_control.html" class="popover-item">
+                        <i data-lucide="shield" style="width: 15px;"></i> Access Matrix & Governance
+                    </a>
+                    <a href="kiosk.html" class="popover-item" target="_blank">
+                        <i data-lucide="monitor" style="width: 15px;"></i> Student Self-Service Kiosk
+                    </a>
+                    <button class="popover-item" onclick="window.printLibraryCard('Administrator', 'ADM-001', 'Chief Admin')">
+                        <i data-lucide="printer" style="width: 15px;"></i> Print Smartcard Badge
+                    </button>
+                </div>
+
+                <!-- Logout -->
+                <div style="padding: 0.35rem; border-top: 1px solid var(--border-color); background: var(--bg-surface);">
+                    <button id="logout-btn" class="popover-item" style="color: var(--danger); font-weight: 700; border-radius: var(--radius-sm);">
+                        <i data-lucide="log-out" style="width: 15px; color: var(--danger);"></i> Sign Out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <style>
+        @media (max-width: 1360px) {
+            .topbar-period-wrapper { display: none !important; }
+        }
+        @media (max-width: 1160px) {
+            #btn-fullscreen-toggle { display: none !important; }
+            #btn-shortcuts-help { display: none !important; }
+            .topbar-create-text { display: none !important; }
+        }
+        @media (max-width: 980px) {
+            #topbar-clock { display: none !important; }
+            .user-name-label { display: none !important; }
+        }
+        @media (max-width: 768px) {
+            #mobile-menu-btn { display: flex !important; }
+            .topbar-search-box { display: none !important; }
+            .topbar-campus-chip { display: none !important; }
+            #quick-action-wrapper { display: none !important; }
+        }
+    </style>
+</header>

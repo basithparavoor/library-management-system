@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Overview - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Topbar Container -->
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Hero Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;"><span class="badge-dot"></span> LIVE SYSTEM</span>
+                            <span id="dashboard-date-badge" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;"></span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Welcome to TGI Library</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Here is a comprehensive real-time overview of library operations today.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <a href="circulation.html" class="btn btn-primary"><i data-lucide="repeat" style="width: 16px; height: 16px;"></i> Circulation Desk</a>
+                        <button class="btn btn-outline" onclick="window.toggleCommandPalette()"><i data-lucide="search" style="width: 16px; height: 16px;"></i> Search <kbd style="background: var(--bg-muted); padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.7rem; border: 1px solid var(--border-color); margin-left: 4px;">Ctrl K</kbd></button>
+                    </div>
+                </div>
+
+                <!-- 4 KPI Stat Cards Grid -->
+                <div class="stats-grid">
+                    <!-- Total Books -->
+                    <div class="card card-glass stat-card card-interactive" style="--stat-bg: rgba(59, 130, 246, 0.1); --stat-color: var(--brand-primary); --stat-glow: rgba(59, 130, 246, 0.2);">
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 0.25rem;">Total Book Copies</p>
+                            <h3 id="stat-total-books" style="font-size: 2rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; margin: 0;">0</h3>
+                            <span style="font-size: 0.75rem; color: var(--success); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; margin-top: 0.25rem;">
+                                <i data-lucide="check-circle" style="width: 12px; height: 12px;"></i> In Catalog
+                            </span>
+                        </div>
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="book-copy" style="width: 24px; height: 24px;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Active Issues -->
+                    <div class="card card-glass stat-card card-interactive" style="--stat-bg: rgba(99, 102, 241, 0.1); --stat-color: #6366f1; --stat-glow: rgba(99, 102, 241, 0.2);">
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 0.25rem;">Active Borrowings</p>
+                            <h3 id="stat-active-issues" style="font-size: 2rem; font-weight: 800; color: #6366f1; letter-spacing: -0.03em; margin: 0;">0</h3>
+                            <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; display: inline-flex; align-items: center; gap: 2px; margin-top: 0.25rem;">
+                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i> Currently with Students
+                            </span>
+                        </div>
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="book-up" style="width: 24px; height: 24px;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Overdue Books -->
+                    <div class="card card-glass stat-card card-interactive" style="--stat-bg: rgba(239, 68, 68, 0.1); --stat-color: var(--danger); --stat-glow: rgba(239, 68, 68, 0.2);">
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 0.25rem;">Overdue Loans</p>
+                            <h3 id="stat-overdue" style="font-size: 2rem; font-weight: 800; color: var(--danger); letter-spacing: -0.03em; margin: 0;">0</h3>
+                            <span style="font-size: 0.75rem; color: var(--danger); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; margin-top: 0.25rem;">
+                                <i data-lucide="alert-triangle" style="width: 12px; height: 12px;"></i> Requires Action
+                            </span>
+                        </div>
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="alert-circle" style="width: 24px; height: 24px;"></i>
+                        </div>
+                    </div>
+
+                    <!-- Total Members -->
+                    <div class="card card-glass stat-card card-interactive" style="--stat-bg: rgba(16, 185, 129, 0.1); --stat-color: var(--success); --stat-glow: rgba(16, 185, 129, 0.2);">
+                        <div>
+                            <p style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em; margin-bottom: 0.25rem;">Active Members</p>
+                            <h3 id="stat-members" style="font-size: 2rem; font-weight: 800; color: var(--success); letter-spacing: -0.03em; margin: 0;">0</h3>
+                            <span style="font-size: 0.75rem; color: var(--success); font-weight: 600; display: inline-flex; align-items: center; gap: 2px; margin-top: 0.25rem;">
+                                <i data-lucide="users" style="width: 12px; height: 12px;"></i> Enrolled Patrons
+                            </span>
+                        </div>
+                        <div class="stat-icon-wrapper">
+                            <i data-lucide="user-check" style="width: 24px; height: 24px;"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Hub Matrix -->
+                <div class="card card-glass" style="padding: 1.25rem 1.5rem;">
+                    <h3 style="font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); margin-bottom: 1rem;">
+                        <i data-lucide="zap" style="width: 14px; height: 14px; color: var(--warning); display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Quick Operations
+                    </h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 0.85rem;">
+                        <a href="circulation.html" class="btn btn-outline" style="justify-content: flex-start; padding: 0.75rem 1rem; border-radius: var(--radius); gap: 0.75rem; background: var(--bg-surface);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59, 130, 246, 0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i data-lucide="book-up" style="width: 16px;"></i></div>
+                            <div style="text-align: left;"><div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Issue Book</div><div style="font-size: 0.7rem; color: var(--text-muted);">Quick check-out</div></div>
+                        </a>
+                        <a href="circulation.html" class="btn btn-outline" style="justify-content: flex-start; padding: 0.75rem 1rem; border-radius: var(--radius); gap: 0.75rem; background: var(--bg-surface);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); color: var(--success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i data-lucide="book-down" style="width: 16px;"></i></div>
+                            <div style="text-align: left;"><div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Return Book</div><div style="font-size: 0.7rem; color: var(--text-muted);">Check-in & fines</div></div>
+                        </a>
+                        <a href="books.html" class="btn btn-outline" style="justify-content: flex-start; padding: 0.75rem 1rem; border-radius: var(--radius); gap: 0.75rem; background: var(--bg-surface);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(139, 92, 246, 0.1); color: var(--accent-violet); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i data-lucide="plus-circle" style="width: 16px;"></i></div>
+                            <div style="text-align: left;"><div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Add Book</div><div style="font-size: 0.7rem; color: var(--text-muted);">New title/copies</div></div>
+                        </a>
+                        <a href="students.html" class="btn btn-outline" style="justify-content: flex-start; padding: 0.75rem 1rem; border-radius: var(--radius); gap: 0.75rem; background: var(--bg-surface);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.1); color: var(--warning); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i data-lucide="user-plus" style="width: 16px;"></i></div>
+                            <div style="text-align: left;"><div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Add Member</div><div style="font-size: 0.7rem; color: var(--text-muted);">Register student</div></div>
+                        </a>
+                        <a href="inventory.html" class="btn btn-outline" style="justify-content: flex-start; padding: 0.75rem 1rem; border-radius: var(--radius); gap: 0.75rem; background: var(--bg-surface);">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(6, 182, 212, 0.1); color: var(--info); display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><i data-lucide="scan-line" style="width: 16px;"></i></div>
+                            <div style="text-align: left;"><div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">Audit Shelf</div><div style="font-size: 0.7rem; color: var(--text-muted);">Scan & reconcile</div></div>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Main Visual Row: Circulation Analytics Chart + Recent Activity Feed -->
+                <div class="responsive-grid-2">
+                    <!-- Circulation Chart Card -->
+                    <div class="card card-glass" style="min-height: 380px; display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Circulation Trends</h2>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Monthly book issue and return volume</p>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 0.4rem; background: var(--bg-muted); padding: 0.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                                <span class="badge" style="background: rgba(59,130,246,0.15); color: var(--brand-primary); font-size: 0.7rem;">Issues</span>
+                                <span class="badge" style="background: rgba(16,185,129,0.15); color: var(--success); font-size: 0.7rem;">Returns</span>
+                            </div>
+                        </div>
+                        <div style="flex: 1; position: relative; width: 100%; min-height: 280px;">
+                            <canvas id="circulationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Activity Feed -->
+                    <div class="card card-glass" style="display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Live Activity Feed</h2>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Latest transactions & updates</p>
+                            </div>
+                            <button id="btn-refresh-feed" class="btn btn-ghost btn-sm" title="Refresh Feed" style="padding: 0.35rem 0.6rem;">
+                                <i data-lucide="rotate-cw" style="width: 14px; height: 14px;"></i> Refresh
+                            </button>
+                        </div>
+
+                        <div id="recent-activity-feed" style="flex: 1; overflow-y: auto; max-height: 340px; display: flex; flex-direction: column; gap: 0.75rem; padding-right: 0.25rem;">
+                            <div style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                                <i data-lucide="loader-2" class="animate-spin" style="width: 24px; height: 24px; margin-bottom: 0.5rem;"></i>
+                                <p style="font-size: 0.85rem;">Loading latest activity...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Command Palette Overlay -->
+    <div id="command-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 9999; align-items: flex-start; justify-content: center; padding-top: 10vh;">
+        <div class="card card-glass animate-scale-in" style="width: 100%; max-width: 620px; padding: 0; overflow: hidden; display: flex; flex-direction: column; margin: 0 1rem; box-shadow: var(--shadow-xl); border: 1px solid var(--border-glass);">
+            <div style="display: flex; align-items: center; padding: 0.5rem 1.25rem; border-bottom: 1px solid var(--border-color); background: var(--bg-surface);">
+                <i data-lucide="search" style="color: var(--brand-primary); width: 20px; height: 20px; margin-right: 0.75rem;"></i>
+                <input type="text" id="global-search-input" placeholder="Search books, student members, shelves..." style="width: 100%; padding: 0.85rem 0; border: none; font-size: 1.05rem; background: transparent; outline: none; color: var(--text-primary); box-shadow: none;">
+                <kbd style="background: var(--bg-muted); color: var(--text-muted); padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; border: 1px solid var(--border-color); font-weight: 600;">ESC</kbd>
+            </div>
+            
+            <div id="command-results" style="max-height: 420px; overflow-y: auto; padding: 0.75rem; display: flex; flex-direction: column; gap: 0.25rem;">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="dashboard.js"></script>
+</body>
+</html>

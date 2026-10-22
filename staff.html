@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Faculty & Staff Directory - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">MASTER DATA</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Faculty & Personnel</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Faculty & Staff Management</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage institutional professors, lab administrators, librarians, and NFC/QR credentials.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="btn-add-staff"><i data-lucide="user-plus" style="width: 16px;"></i> Add Faculty / Staff</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                            <i data-lucide="user-check"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Total Faculty & Staff</div>
+                            <div class="stat-value" id="kpi-total-staff">4</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                            <i data-lucide="graduation-cap"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Professors & Teachers</div>
+                            <div class="stat-value" id="kpi-teachers">1</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                            <i data-lucide="book-marked"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Librarians & Officers</div>
+                            <div class="stat-value" id="kpi-librarians">1</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                            <i data-lucide="radio"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">NFC Smartcards Active</div>
+                            <div class="stat-value" id="kpi-nfc-staff">4</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Search & Filters Toolbar -->
+                <div class="card card-glass" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; padding: 1rem 1.25rem;">
+                    <div class="input-group" style="margin-bottom: 0; flex: 1; min-width: 260px;">
+                        <input type="text" id="staff-search" placeholder="Search by name, employee ID, designation, email...">
+                    </div>
+                    <div style="display: flex; gap: 0.75rem;">
+                        <select id="staff-role-filter" style="padding: 0.55rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);">
+                            <option value="ALL">All Roles</option>
+                            <option value="TEACHER">Teaching Faculty</option>
+                            <option value="LIBRARIAN">Librarian</option>
+                            <option value="CAMPUS_HEAD">Campus Head / Dean</option>
+                            <option value="LAB_ADMIN">Lab Administrator</option>
+                            <option value="EVENT_CONDUCTOR">Event Conductor</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Staff Table -->
+                <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <div class="table-responsive" style="min-height: 380px;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-staff" class="custom-checkbox"></th>
+                                    <th>Faculty / Staff Member</th>
+                                    <th>Employee ID</th>
+                                    <th>Designation & Dept</th>
+                                    <th>Role</th>
+                                    <th>Smartcard NFC / QR</th>
+                                    <th>Status</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-tbody">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- MODAL: Add / Edit Staff -->
+                <div id="modal-staff" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 580px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title" id="modal-staff-title">Register Faculty / Staff Member</h3>
+                            <button class="modal-close" id="btn-close-staff-modal">&times;</button>
+                        </div>
+                        <form id="form-staff" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <input type="hidden" id="staff-id">
+                            
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Campus Assignment *</label>
+                                    <select id="st-campus" required>
+                                        <!-- Injected dynamically -->
+                                    </select>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Employee ID *</label>
+                                    <input type="text" id="st-emp-id" placeholder="e.g. FAC-2026-05" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Full Name *</label>
+                                    <input type="text" id="st-name" placeholder="e.g. Staff Full Name" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Designation *</label>
+                                    <input type="text" id="st-designation" placeholder="e.g. Professor / Librarian" required>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Institutional Role *</label>
+                                    <select id="st-role" required>
+                                        <option value="TEACHER">Teacher / Faculty</option>
+                                        <option value="LIBRARIAN">Librarian</option>
+                                        <option value="CAMPUS_HEAD">Campus Head / Dean</option>
+                                        <option value="LAB_ADMIN">Lab Administrator</option>
+                                        <option value="EVENT_CONDUCTOR">Event Conductor</option>
+                                    </select>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Department Name</label>
+                                    <input type="text" id="st-dept" placeholder="e.g. Computer Science">
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Official Email</label>
+                                    <input type="email" id="st-email" placeholder="e.g. staff@institution.edu">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Contact Phone</label>
+                                    <input type="tel" id="st-phone" placeholder="e.g. +1 555-0100">
+                                </div>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Hardware NFC Smartcard Tag ID</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" id="st-nfc" placeholder="e.g. NFC-STF-001 or tap smartcard">
+                                    <button type="button" class="btn btn-outline" id="btn-scan-staff-nfc" title="Tap physical NFC smartcard to auto-fill">
+                                        <i data-lucide="radio" style="width: 15px;"></i> Tap NFC
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-staff">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="check" style="width: 16px;"></i> Save Faculty Record</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="staff.js"></script>
+</body>
+</html>

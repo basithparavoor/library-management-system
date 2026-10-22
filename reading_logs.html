@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Reading Program & Branch Lending - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">ACADEMIC SCHOOL SUITE</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Reading Progress & Logistics</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Reading Programs & Branch Logistics</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage student reading hours, teacher classroom book sets, inter-campus branch transfers, and book audits.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-open-transfer-modal"><i data-lucide="truck" style="width: 16px;"></i> Inter-Campus Transfer</button>
+                        <button class="btn btn-primary" id="btn-open-set-modal"><i data-lucide="package-plus" style="width: 16px;"></i> Assign Classroom Set</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                            <i data-lucide="book-open"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Total Reading Hours</div>
+                            <div class="stat-value" id="kpi-reading-hours">1,420 hrs</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                            <i data-lucide="package"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Classroom Book Sets</div>
+                            <div class="stat-value" id="kpi-classroom-sets">3 Sets</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                            <i data-lucide="truck"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Branch Transfers</div>
+                            <div class="stat-value" id="kpi-active-transfers">2 Active</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                            <i data-lucide="shield-alert"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Damaged / Lost Audits</div>
+                            <div class="stat-value" id="kpi-damage-records">1 Case</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-primary" id="tab-reading-btn" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;"><i data-lucide="award" style="width: 15px;"></i> Student Reading Logs</button>
+                    <button class="btn btn-outline" id="tab-sets-btn" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;"><i data-lucide="boxes" style="width: 15px;"></i> Teacher Classroom Sets</button>
+                    <button class="btn btn-outline" id="tab-transfers-btn" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;"><i data-lucide="truck" style="width: 15px;"></i> Inter-Campus Transfers</button>
+                    <button class="btn btn-outline" id="tab-damage-btn" style="padding: 0.5rem 1.15rem; font-size: 0.85rem;"><i data-lucide="alert-circle" style="width: 15px;"></i> Damage & Loss Audits</button>
+                </div>
+
+                <!-- TAB 1: Student Reading Logs -->
+                <div id="section-reading" style="display: block;">
+                    <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Academic Reading Achievements</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Tracked reading sessions, pages read, and student milestones</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-log-reading"><i data-lucide="plus" style="width: 14px;"></i> Log Reading Session</button>
+                        </div>
+
+                        <div class="table-responsive" style="min-height: 320px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Student</th>
+                                        <th>Book Title</th>
+                                        <th>Pages Read</th>
+                                        <th>Duration</th>
+                                        <th>Date</th>
+                                        <th>Achievement Badge</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reading-logs-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Classroom Book Sets -->
+                <div id="section-sets" style="display: none;">
+                    <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Teacher Classroom Book Sets</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Batch sets assigned to teachers for whole-class reading periods</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="min-height: 320px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Classroom Set Title</th>
+                                        <th>Assigned Teacher</th>
+                                        <th>Grade / Class</th>
+                                        <th>Copies</th>
+                                        <th>Borrowed Date</th>
+                                        <th>Due Date</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classroom-sets-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: Inter-Campus Transfers -->
+                <div id="section-transfers" style="display: none;">
+                    <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Inter-Campus Library Branch Courier</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Move book inventory batches across school sub-campuses</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="min-height: 320px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Transfer ID</th>
+                                        <th>Book / Material</th>
+                                        <th>Quantity</th>
+                                        <th>Origin Branch</th>
+                                        <th>Destination Branch</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Courier Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="transfers-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: Damage & Loss Audits -->
+                <div id="section-damage" style="display: none;">
+                    <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Damaged & Lost Book Audit Log</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Record condition issues (torn pages, water damage) and duplicate replacement status</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-report-damage"><i data-lucide="plus" style="width: 14px;"></i> Record Condition Incident</button>
+                        </div>
+
+                        <div class="table-responsive" style="min-height: 320px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Barcode & Book</th>
+                                        <th>Responsible Student</th>
+                                        <th>Damage Condition</th>
+                                        <th>Librarian Notes</th>
+                                        <th>Reported Date</th>
+                                        <th>Resolution</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="damage-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL: Assign Classroom Book Set -->
+                <div id="modal-set" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 500px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Assign Classroom Book Set</h3>
+                            <button class="modal-close" id="btn-close-set-modal">&times;</button>
+                        </div>
+                        <form id="form-set" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Book Set Title *</label>
+                                <input type="text" id="set-title" placeholder="e.g. Science Reference Set Vol. 1" required>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Teacher Full Name *</label>
+                                    <input type="text" id="set-teacher-name" placeholder="e.g. Teacher / Faculty Name" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Grade / Section *</label>
+                                    <input type="text" id="set-grade" placeholder="e.g. Section 10-A" required>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Number of Copies *</label>
+                                    <input type="number" id="set-copies" value="30" min="1" max="100" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Return Due Date</label>
+                                    <input type="date" id="set-due-date">
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-set">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="check" style="width: 16px;"></i> Issue Classroom Set</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL: Inter-Campus Transfer -->
+                <div id="modal-transfer" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 500px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Initiate Inter-Campus Book Transfer</h3>
+                            <button class="modal-close" id="btn-close-transfer-modal">&times;</button>
+                        </div>
+                        <form id="form-transfer" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Book Title / Subject *</label>
+                                <input type="text" id="tr-book" placeholder="e.g. Encyclopedia of Science Vol. 1-4" required>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Source Campus *</label>
+                                    <select id="tr-from" required></select>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Destination Branch *</label>
+                                    <select id="tr-to" required></select>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Quantity *</label>
+                                    <input type="number" id="tr-qty" value="10" min="1" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Requested By *</label>
+                                    <input type="text" id="tr-requester" placeholder="e.g. Science Dept Head" required>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-transfer">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="truck" style="width: 16px;"></i> Dispatch via Campus Courier</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL: Log Reading Session -->
+                <div id="modal-log-reading" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 460px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Log Student Reading Progress</h3>
+                            <button class="modal-close" id="btn-close-log-modal">&times;</button>
+                        </div>
+                        <form id="form-reading-log" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Student Register ID *</label>
+                                <input type="text" id="rl-student-id" placeholder="e.g. STU-1001" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Student Full Name *</label>
+                                <input type="text" id="rl-student-name" placeholder="e.g. Student Full Name" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Book Title Read *</label>
+                                <input type="text" id="rl-book-title" placeholder="e.g. Book Title Read" required>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Pages Read *</label>
+                                    <input type="number" id="rl-pages" value="25" min="1" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Minutes Spent *</label>
+                                    <input type="number" id="rl-minutes" value="45" min="5" required>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-log">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="award" style="width: 16px;"></i> Record Reading Log</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- MODAL: Report Damage -->
+                <div id="modal-damage" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 480px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Record Book Condition / Damage</h3>
+                            <button class="modal-close" id="btn-close-damage-modal">&times;</button>
+                        </div>
+                        <form id="form-damage" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Book Barcode *</label>
+                                <input type="text" id="dam-barcode" placeholder="e.g. BK-1001" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Book Title *</label>
+                                <input type="text" id="dam-title" placeholder="e.g. Book Title" required>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Student ID</label>
+                                    <input type="text" id="dam-student-id" placeholder="e.g. STU-1001">
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Condition Issue *</label>
+                                    <select id="dam-type">
+                                        <option value="PAGES_TORN">Pages Torn / Missing</option>
+                                        <option value="WATER_DAMAGE">Water / Liquid Damage</option>
+                                        <option value="BINDING_BROKEN">Spine / Binding Broken</option>
+                                        <option value="LOST">Book Lost / Not Returned</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Librarian Notes & Resolution</label>
+                                <textarea id="dam-notes" rows="2" placeholder="e.g. Student requested to replace with brand-new identical copy"></textarea>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-damage">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="check" style="width: 16px;"></i> Log Incident</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="reading_logs.js"></script>
+</body>
+</html>

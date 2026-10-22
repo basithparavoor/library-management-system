@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrance Verification & Hall Pass - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">DISCIPLINE & LOGISTICS</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Entrance Verification</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Library Entrance & Hall Pass Desk</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Verify student arrival times, prevent hallway wandering, and monitor in-transit classroom permissions.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="btn-issue-pass"><i data-lucide="ticket" style="width: 16px;"></i> Issue Classroom Hall Pass</button>
+                    </div>
+                </div>
+
+                <!-- KPI Cards Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                            <i data-lucide="footprints"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">In-Transit Passes</div>
+                            <div class="stat-value" id="kpi-in-transit">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                            <i data-lucide="check-circle-2"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Verified On-Time</div>
+                            <div class="stat-value" id="kpi-ontime">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--color-danger);">
+                            <i data-lucide="alert-octagon"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Late / Truant Flags</div>
+                            <div class="stat-value" id="kpi-late">0</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                            <i data-lucide="scan-line"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Entrance Scanner</div>
+                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-success);">ACTIVE</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Grid: Scanner Desk & In-Transit Roster -->
+                <div style="display: grid; grid-template-columns: 380px 1fr; gap: 1.5rem; align-items: start;">
+                    
+                    <!-- Entrance Verification Scanner Box -->
+                    <div class="card card-glass">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                            <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Entrance Scanner</h3>
+                            <span class="badge badge-success"><span class="badge-dot"></span> Gate 1</span>
+                        </div>
+
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                            Scan student's NFC card, QR pass, or barcode upon entering the library.
+                        </p>
+
+                        <!-- Input Field -->
+                        <div class="input-group">
+                            <label>Scan Student ID / Pass Code</label>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="entrance-scan-input" placeholder="Tap NFC or Scan Barcode..." autofocus>
+                                <button class="btn btn-primary" id="btn-verify-entrance"><i data-lucide="check" style="width: 16px;"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Hardware Trigger Buttons -->
+                        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                            <button class="btn btn-outline" id="btn-entrance-nfc" style="flex: 1; font-size: 0.8rem;"><i data-lucide="radio" style="width: 14px;"></i> Tap NFC Card</button>
+                            <button class="btn btn-outline" id="btn-entrance-camera" style="flex: 1; font-size: 0.8rem;"><i data-lucide="camera" style="width: 14px;"></i> Camera QR</button>
+                        </div>
+
+                        <!-- Camera Viewport -->
+                        <div id="entrance-camera-reader" style="width: 100%; border-radius: var(--radius-md); overflow: hidden; display: none; margin-bottom: 1rem;"></div>
+
+                        <!-- Real-time Verification Feedback -->
+                        <div id="entrance-verification-result" style="display: none; padding: 1rem; border-radius: var(--radius-md); font-size: 0.85rem;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- In-Transit Hallway & Pass Activity Table -->
+                    <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Hallway Movement & Transit Board</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Students with active exit passes from lectures to the library</p>
+                            </div>
+                            <span class="badge badge-brand">15-Min Transit Limit</span>
+                        </div>
+
+                        <div class="table-responsive" style="min-height: 380px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pass Code</th>
+                                        <th>Student</th>
+                                        <th>Origin Class</th>
+                                        <th>Issuing Teacher</th>
+                                        <th>Departed</th>
+                                        <th>Status / Timer</th>
+                                        <th style="text-align: right;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="hallpass-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- MODAL: Issue Classroom Hall Pass -->
+                <div id="modal-issue-pass" class="modal-backdrop" style="display: none;">
+                    <div class="modal card card-glass" style="max-width: 480px; width: 95%;">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Issue Digital Library Hall Pass</h3>
+                            <button class="modal-close" id="btn-close-pass-modal">&times;</button>
+                        </div>
+                        <form id="form-issue-pass" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Student Register ID *</label>
+                                <input type="text" id="pass-student-id" placeholder="e.g. STU-1001" required>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Student Full Name *</label>
+                                <input type="text" id="pass-student-name" placeholder="e.g. Student Full Name" required>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Origin Classroom / Lab *</label>
+                                    <input type="text" id="pass-origin" placeholder="e.g. Room 204" required>
+                                </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label>Issuing Teacher *</label>
+                                    <input type="text" id="pass-teacher" placeholder="e.g. Teacher / Faculty Name" required>
+                                </div>
+                            </div>
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Academic Reason</label>
+                                <select id="pass-reason">
+                                    <option value="Library Book Research">Library Book Research & Reference</option>
+                                    <option value="Computer Lab Coding Assignment">Computer Lab Practical Task</option>
+                                    <option value="Returning Overdue Textbooks">Returning Borrowed Textbooks</option>
+                                </select>
+                            </div>
+
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 0.5rem;">
+                                <button type="button" class="btn btn-outline" id="btn-cancel-pass">Cancel</button>
+                                <button type="submit" class="btn btn-primary"><i data-lucide="send" style="width: 16px;"></i> Issue Pass (15 Mins)</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="hallpass.js"></script>
+</body>
+</html>

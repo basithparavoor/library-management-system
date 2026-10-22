@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Settings - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .tab-btn { 
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+        }
+        .tab-btn.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--brand-primary);
+        }
+        .tab-btn:hover:not(.active) {
+            background: var(--bg-muted);
+            color: var(--text-primary);
+        }
+
+        .shortcut-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 0.85rem;
+        }
+
+        .shortcut-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 0.75rem;
+            transition: all var(--transition-fast);
+        }
+
+        .shortcut-card:hover {
+            border-color: rgba(59, 130, 246, 0.4);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+        }
+
+        .key-recorder-active {
+            border-color: var(--brand-primary) !important;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+            background: rgba(59, 130, 246, 0.04) !important;
+            animation: pulse-border 1.5s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { border-color: rgba(59, 130, 246, 0.4); }
+            50% { border-color: rgba(59, 130, 246, 1); }
+            100% { border-color: rgba(59, 130, 246, 0.4); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">CONFIGURATION</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Rules & Master Entities</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">System Settings</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Configure circulation policies, institutional campuses, hierarchies, and custom keyboard hotkeys.</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; flex-wrap: wrap;">
+                    <button class="tab-btn active" data-target="panel-institution"><i data-lucide="building-2" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Institution Profile & Branding</button>
+                    <button class="tab-btn" data-target="panel-general"><i data-lucide="sliders" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Circulation Rules</button>
+                    <button class="tab-btn" data-target="panel-campuses"><i data-lucide="map-pin" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Institutional Campuses</button>
+                    <button class="tab-btn" data-target="panel-shortcuts"><i data-lucide="keyboard" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Keyboard Hotkeys & Hardware</button>
+                    <button class="tab-btn" data-target="panel-master-links"><i data-lucide="layout-grid" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Academic & Storage Suites</button>
+                </div>
+
+                <!-- PANEL 0: INSTITUTION PROFILE & BRANDING -->
+                <div id="panel-institution" class="card card-glass tab-panel" style="display: block;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <h2 style="font-size: 1.2rem; font-weight: 800; margin: 0;">Institution Details, Logo & Branding</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Customize institution name, official letterhead seals, brand logo, favicon, and contact credentials.</p>
+                        </div>
+                        <button class="btn btn-outline btn-sm" id="btn-reset-profile"><i data-lucide="rotate-ccw" style="width: 14px;"></i> Reset Defaults</button>
+                    </div>
+
+                    <form id="form-institution-profile" style="margin-top: 1.25rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.25rem;">
+                            <div class="input-group">
+                                <label>Institution Name *</label>
+                                <input type="text" id="inst-name" placeholder="e.g. University / College / Institute Name" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Tagline / Motto</label>
+                                <input type="text" id="inst-tagline" placeholder="e.g. Academic Excellence & Research">
+                            </div>
+                            <div class="input-group">
+                                <label>Affiliation / Registration Code</label>
+                                <input type="text" id="inst-reg-code" placeholder="e.g. REG-UNIV-2026">
+                            </div>
+                            <div class="input-group">
+                                <label>Established Year</label>
+                                <input type="text" id="inst-est-year" placeholder="e.g. 1998">
+                            </div>
+                            <div class="input-group">
+                                <label>Official Contact Email</label>
+                                <input type="email" id="inst-email" placeholder="e.g. admin@institution.edu">
+                            </div>
+                            <div class="input-group">
+                                <label>Official Phone Number</label>
+                                <input type="text" id="inst-phone" placeholder="e.g. +1 555-0100">
+                            </div>
+                            <div class="input-group">
+                                <label>Official Website URL</label>
+                                <input type="url" id="inst-website" placeholder="https://example.edu">
+                            </div>
+                            <div class="input-group">
+                                <label>Campus Address / Headquarters</label>
+                                <input type="text" id="inst-address" placeholder="Bangalore, Karnataka, India">
+                            </div>
+                        </div>
+
+                        <!-- Logo & Favicon Upload Section -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color);">
+                            <!-- Logo Box -->
+                            <div class="card" style="background: var(--bg-surface); padding: 1.25rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; border-radius: 6px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="image" style="width: 16px; height: 16px;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Institution Logo</h4>
+                                        <p style="margin: 0; font-size: 0.72rem; color: var(--text-secondary);">Displayed in sidebar header, letterheads & PDF reports</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                                    <div id="inst-logo-preview" style="width: 60px; height: 60px; border-radius: 10px; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg-muted); flex-shrink: 0;">
+                                        <i data-lucide="building-2" style="width: 24px; height: 24px; color: var(--text-muted);"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <input type="file" id="inst-logo-file" accept="image/*" style="font-size: 0.8rem; margin-bottom: 0.35rem; width: 100%;">
+                                        <input type="text" id="inst-logo-url" placeholder="Or paste Logo Image URL (https://...)" style="padding: 0.45rem 0.65rem; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-logo" style="color: var(--color-danger); font-size: 0.75rem; padding: 0.2rem 0.5rem;"><i data-lucide="trash-2" style="width: 12px;"></i> Remove Logo</button>
+                            </div>
+
+                            <!-- Favicon Box -->
+                            <div class="card" style="background: var(--bg-surface); padding: 1.25rem;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                    <div style="width: 32px; height: 32px; border-radius: 6px; background: rgba(139,92,246,0.1); color: var(--brand-accent); display: flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="globe" style="width: 16px; height: 16px;"></i>
+                                    </div>
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Browser Tab Favicon</h4>
+                                        <p style="margin: 0; font-size: 0.72rem; color: var(--text-secondary);">Small icon displayed on web browser tabs (PNG, ICO, SVG)</p>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 0.75rem;">
+                                    <div id="inst-favicon-preview" style="width: 48px; height: 48px; border-radius: 8px; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg-muted); flex-shrink: 0;">
+                                        <i data-lucide="bookmark" style="width: 20px; height: 20px; color: var(--text-muted);"></i>
+                                    </div>
+                                    <div style="flex: 1;">
+                                        <input type="file" id="inst-favicon-file" accept="image/*" style="font-size: 0.8rem; margin-bottom: 0.35rem; width: 100%;">
+                                        <input type="text" id="inst-favicon-url" placeholder="Or paste Favicon URL (https://...)" style="padding: 0.45rem 0.65rem; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                                <button type="button" class="btn btn-ghost btn-sm" id="btn-clear-favicon" style="color: var(--color-danger); font-size: 0.75rem; padding: 0.2rem 0.5rem;"><i data-lucide="trash-2" style="width: 12px;"></i> Remove Favicon</button>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn btn-primary" id="btn-save-institution">
+                                <i data-lucide="save" style="width: 16px;"></i> Save Institution Profile & Branding
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PANEL 1: GENERAL SETTINGS -->
+                <div id="panel-general" class="card card-glass tab-panel" style="display: none;">
+                    <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.25rem;">Circulation & Overdue Policies</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">These rules govern loan durations and overdue fine calculations across all terminals.</p>
+                    
+                    <form id="settings-form">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+                            <div class="input-group">
+                                <label>Default Loan Period (Days) *</label>
+                                <input type="number" id="setting-loan-days" value="14" min="1" max="90" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Overdue Fine Rate (₹ per day) *</label>
+                                <input type="number" id="setting-fine-amount" step="0.5" value="2.00" min="0" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Max Books per Member *</label>
+                                <input type="number" id="setting-max-books" value="3" min="1" max="20" required>
+                            </div>
+                            <div class="input-group">
+                                <label>Max Allowed Renewals *</label>
+                                <input type="number" id="setting-max-renewals" value="1" min="0" max="5" required>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end;">
+                            <button type="submit" class="btn btn-primary" id="btn-save-settings">
+                                <i data-lucide="save" style="width: 16px;"></i> Save Circulation Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- PANEL 2: INSTITUTIONAL CAMPUSES -->
+                <div id="panel-campuses" class="card card-glass tab-panel" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <h2 style="font-size: 1.2rem; font-weight: 800; margin: 0;">Institutional Sub-Campuses</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Manage campuses, branches, dean leadership, custom campus logos, and inter-campus routing.</p>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="btn-add-campus"><i data-lucide="plus" style="width: 14px;"></i> Register Campus</button>
+                    </div>
+                    
+                    <div class="table-responsive" style="margin-top: 1rem;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Logo</th>
+                                    <th>Campus Code</th>
+                                    <th>Campus Name</th>
+                                    <th>City / Region</th>
+                                    <th>Dean / Campus Head</th>
+                                    <th>Contact Email</th>
+                                    <th>Phone</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="campuses-tbody">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- PANEL 5: DEDICATED SUITES QUICK LINKS -->
+                <div id="panel-master-links" class="card card-glass tab-panel" style="display: none;">
+                    <h2 style="font-size: 1.2rem; font-weight: 800; margin-bottom: 0.25rem;">Academic Structure & Library Storage Suites</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">Academic Structure and Library Storage have been upgraded to standalone management hubs with PDF/CSV report generation engines.</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem;">
+                        <!-- Academic Structure Card -->
+                        <div class="card" style="background: var(--bg-surface); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid var(--brand-primary);">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                    <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="network" style="width: 22px; height: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Academic Structure Management</h3>
+                                        <span class="badge badge-brand" style="font-size: 0.65rem;">Standalone Suite</span>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1rem;">
+                                    Manage university faculties, academic departments, degree courses/programs, and student class sections with batch analytics. Generate printable academic audit PDF sheets and CSV rosters.
+                                </p>
+                                <ul style="font-size: 0.8rem; color: var(--text-muted); padding-left: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                                    <li>Department & HOD Faculty Configuration</li>
+                                    <li>Degree Programs & Curriculum Tracking</li>
+                                    <li>Classroom Sections & Student Roster Capacities</li>
+                                    <li>Downloadable PDF Audits & Compliance CSVs</li>
+                                </ul>
+                            </div>
+                            <a href="academic_structure.html" class="btn btn-primary" style="width: 100%; text-align: center;">
+                                <i data-lucide="external-link" style="width: 16px;"></i> Open Academic Structure Hub
+                            </a>
+                        </div>
+
+                        <!-- Library Storage Card -->
+                        <div class="card" style="background: var(--bg-surface); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; border-left: 4px solid var(--brand-accent);">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+                                    <div style="width: 42px; height: 42px; border-radius: 10px; background: rgba(139,92,246,0.1); color: var(--brand-accent); display: flex; align-items: center; justify-content: center;">
+                                        <i data-lucide="archive" style="width: 22px; height: 22px;"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Library Storage & Locations</h3>
+                                        <span class="badge" style="background: rgba(139,92,246,0.1); color: var(--brand-accent); font-size: 0.65rem;">Standalone Suite</span>
+                                    </div>
+                                </div>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.45; margin-bottom: 1rem;">
+                                    Architect library physical locations, storage wings/floors, book shelves, and multi-tier rack compartments. Monitor live capacity meters and print shelf audit matrices.
+                                </p>
+                                <ul style="font-size: 0.8rem; color: var(--text-muted); padding-left: 1.25rem; margin-bottom: 1.25rem; display: flex; flex-direction: column; gap: 0.35rem;">
+                                    <li>Storage Wings, Stack Rooms & Floor Zones</li>
+                                    <li>Shelves & Category/Subject Allocation</li>
+                                    <li>Rack Compartments & Real-time Book Capacity Meters</li>
+                                    <li>Shelf Audit Sheets & CSV Matrix Exporter</li>
+                                </ul>
+                            </div>
+                            <a href="library_storage.html" class="btn btn-primary" style="width: 100%; text-align: center; background: var(--brand-accent); border-color: var(--brand-accent);">
+                                <i data-lucide="external-link" style="width: 16px;"></i> Open Library Storage Hub
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 4: KEYBOARD SHORTCUTS & HARDWARE KEYBINDINGS -->
+                <div id="panel-shortcuts" class="card card-glass tab-panel" style="display: none;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                        <div>
+                            <h2 style="font-size: 1.2rem; font-weight: 800; margin: 0;">Keyboard Shortcuts & Hardware Keybindings</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0.25rem 0 0 0;">Assign custom hotkeys for fast desk navigation, hardware scan triggers, and circulation workflows.</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn btn-outline btn-sm" id="btn-reset-shortcuts">
+                                <i data-lucide="rotate-ccw" style="width: 14px;"></i> Reset Defaults
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="window.shortcuts.showHelpModal()">
+                                <i data-lucide="help-circle" style="width: 14px;"></i> View Cheat Sheet (<kbd>?</kbd>)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Hardware Scanner Live Diagnostic Test Pad -->
+                    <div style="background: linear-gradient(135deg, rgba(59,130,246,0.06) 0%, rgba(139,92,246,0.06) 100%); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius-md); padding: 1.25rem; margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 28px; height: 28px; border-radius: 6px; background: var(--brand-primary); color: white; display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="scan" style="width: 16px; height: 16px;"></i>
+                                </div>
+                                <div>
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 800;">Hardware Scanner Live Test Pad</h4>
+                                    <p style="margin: 0; font-size: 0.75rem; color: var(--text-secondary);">Point USB/Bluetooth barcode gun or tap NFC smartcard to test rapid classification</p>
+                                </div>
+                            </div>
+                            <span class="badge badge-success" style="font-size: 0.7rem;"><i data-lucide="check" style="width: 12px; height: 12px; display: inline-block;"></i> Auto-Detection Active</span>
+                        </div>
+                        <div style="display: flex; gap: 0.75rem; align-items: center;">
+                            <input type="text" id="scanner-test-input" placeholder="Scan barcode or NFC here to test latency and classification..." style="flex: 1; padding: 0.65rem 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-primary); font-family: var(--font-mono); font-size: 0.85rem;">
+                            <button class="btn btn-outline" id="btn-test-nfc-tap" title="Simulate Web NFC Tag"><i data-lucide="radio" style="width: 16px;"></i> Test NFC</button>
+                        </div>
+                        <div id="scanner-test-result" style="margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-secondary); display: none;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Category Tabs for Hotkeys -->
+                    <div style="display: flex; gap: 0.35rem; margin-bottom: 1rem; overflow-x: auto;" id="shortcut-category-filters">
+                        <button class="btn btn-primary btn-sm shortcut-filter-btn" data-cat="ALL">All Categories</button>
+                        <button class="btn btn-outline btn-sm shortcut-filter-btn" data-cat="Navigation">Navigation</button>
+                        <button class="btn btn-outline btn-sm shortcut-filter-btn" data-cat="Circulation">Circulation</button>
+                        <button class="btn btn-outline btn-sm shortcut-filter-btn" data-cat="Hardware">Hardware</button>
+                        <button class="btn btn-outline btn-sm shortcut-filter-btn" data-cat="General">General</button>
+                        <button class="btn btn-outline btn-sm shortcut-filter-btn" data-cat="Modules">Modules</button>
+                    </div>
+
+                    <!-- Shortcut Cards List -->
+                    <div id="shortcuts-grid-container" class="shortcut-grid">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Rebind Key Recording Modal -->
+    <div id="modal-rebind-recorder" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 440px; text-align: center;">
+            <div style="width: 56px; height: 56px; border-radius: 50%; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                <i data-lucide="keyboard" style="width: 28px; height: 28px;"></i>
+            </div>
+            <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0 0 0.25rem 0;" id="recorder-action-name">Assign Key Combination</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0 0 1.5rem 0;">Press any combination of keys on your keyboard (e.g. <kbd>Ctrl+B</kbd>, <kbd>F4</kbd>, <kbd>Alt+Shift+X</kbd>).</p>
+            
+            <div id="recorder-captured-box" style="padding: 1.25rem; background: var(--bg-muted); border: 2px dashed var(--brand-primary); border-radius: var(--radius-md); font-size: 1.25rem; font-weight: 800; font-family: var(--font-mono); color: var(--brand-primary); min-height: 60px; display: flex; align-items: center; justify-content: center; margin-bottom: 1.5rem;">
+                Listening for keys...
+            </div>
+
+            <div style="display: flex; gap: 0.75rem;">
+                <button class="btn btn-outline" style="flex: 1;" id="btn-cancel-recording">Cancel</button>
+                <button class="btn btn-primary" style="flex: 1;" id="btn-confirm-recording" disabled>Save Shortcut</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campus Modal -->
+    <div id="modal-campus" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-campus-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Register Institutional Campus</h3>
+                <button class="btn btn-ghost btn-icon close-campus-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <form id="form-campus">
+                <input type="hidden" id="camp-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="input-group">
+                        <label>Campus Code *</label>
+                        <input type="text" id="camp-code" placeholder="e.g. TEC" required>
+                    </div>
+                    <div class="input-group">
+                        <label>City / Region *</label>
+                        <input type="text" id="camp-city" placeholder="e.g. Bangalore" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Campus Full Name *</label>
+                    <input type="text" id="camp-name" placeholder="e.g. Technology & Engineering Campus" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Dean / Campus Head *</label>
+                    <input type="text" id="camp-head" placeholder="e.g. Prof. Evelyn Reed" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="input-group">
+                        <label>Official Email</label>
+                        <input type="email" id="camp-email" placeholder="dean.tech@tgi.edu">
+                    </div>
+                    <div class="input-group">
+                        <label>Contact Phone</label>
+                        <input type="text" id="camp-phone" placeholder="+91 80 4123 8900">
+                    </div>
+                </div>
+
+                <!-- Campus Logo Upload -->
+                <div style="margin-top: 1rem; padding: 1rem; border-radius: var(--radius-sm); background: var(--bg-surface); border: 1px solid var(--border-color);">
+                    <label style="font-size: 0.8rem; font-weight: 700; color: var(--text-primary); display: block; margin-bottom: 0.5rem;">Campus Logo / Crest Emblem</label>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <div id="camp-logo-preview" style="width: 44px; height: 44px; border-radius: 8px; border: 1.5px dashed var(--border-color); display: flex; align-items: center; justify-content: center; overflow: hidden; background: var(--bg-muted); flex-shrink: 0;">
+                            <i data-lucide="building-2" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <input type="file" id="camp-logo-file" accept="image/*" style="font-size: 0.78rem; margin-bottom: 0.35rem; width: 100%;">
+                            <input type="text" id="camp-logo-url" placeholder="Or paste Logo Image URL (https://...)" style="padding: 0.4rem 0.6rem; font-size: 0.8rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-campus-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Campus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shortcuts.js"></script>
+    <script type="module" src="settings.js"></script>
+</body>
+</html>

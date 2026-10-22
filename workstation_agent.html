@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Workstation Classroom Lock & Focus Agent - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Windows Client Lock & Desktop Styles */
+        .win-lockscreen {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #0369a1 100%);
+            border-radius: var(--radius-lg);
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 2.5rem;
+            color: white;
+            box-shadow: var(--shadow-xl);
+            position: relative;
+            overflow: hidden;
+        }
+        .win-desktop {
+            background: #0284c7;
+            border-radius: var(--radius-lg);
+            min-height: 520px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+        .win-taskbar {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(12px);
+            color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .excel-cell {
+            border: 1px solid #cbd5e1;
+            padding: 4px 8px;
+            min-width: 80px;
+            height: 28px;
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            background: white;
+            color: #0f172a;
+            outline: none;
+        }
+        .excel-cell:focus {
+            border: 2px solid #16a34a;
+            background: #f0fdf4;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">WINDOWS WORKSTATION AGENT</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Classroom Focus & Single-Student Lock</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Workstation Focus Locker & Kiosk Agent</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Lock lab PCs to assigned students only during class periods and enforce single-app focus (Excel, Python, Exam).</p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary" id="btn-view-client"><i data-lucide="monitor" style="width: 16px;"></i> Workstation Client</button>
+                        <button class="btn btn-outline" id="btn-view-admin-ctrl"><i data-lucide="shield" style="width: 16px;"></i> Teacher Policy Console</button>
+                    </div>
+                </div>
+
+                <!-- SECTION 1: WINDOWS WORKSTATION CLIENT SIMULATOR -->
+                <div id="section-client-view" style="display: block; margin-top: 1rem;">
+                    
+                    <!-- Terminal Selection Bar -->
+                    <div class="card card-glass" style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1.25rem; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.75rem;">
+                            <span style="font-size: 0.85rem; font-weight: 700;">Simulated Workstation:</span>
+                            <select id="active-machine-select" style="padding: 0.35rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); font-weight: 700; color: var(--brand-primary); font-family: var(--font-mono);">
+                            </select>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="badge badge-brand" id="client-active-period-badge">Workstation Ready</span>
+                            <span class="badge badge-warning" id="client-policy-badge">STATION ACTIVE</span>
+                        </div>
+                    </div>
+
+                    <!-- STATE A: WORKSTATION LOCKED SCREEN -->
+                    <div id="client-locked-screen" class="win-lockscreen">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <div>
+                                <div style="font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; opacity: 0.8;" id="lockscreen-inst-name">INSTITUTION • WORKSTATION AGENT</div>
+                                <div style="font-size: 1.5rem; font-weight: 900; margin-top: 0.2rem;" id="lockscreen-machine-code">PC-01</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 2.25rem; font-weight: 900; font-family: var(--font-mono);" id="lockscreen-clock">--:--</div>
+                                <div style="font-size: 0.8rem; opacity: 0.85;" id="lockscreen-date">Workstation Locked</div>
+                            </div>
+                        </div>
+
+                        <!-- Login Box -->
+                        <div style="background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 2rem; max-width: 420px; width: 100%; margin: 1.5rem auto; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+                            <div style="width: 64px; height: 64px; border-radius: 50%; background: var(--brand-gradient); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem; font-weight: 800; border: 2px solid white;">
+                                <i data-lucide="lock" style="width: 28px; height: 28px;"></i>
+                            </div>
+                            <h3 style="font-size: 1.25rem; font-weight: 800; margin-bottom: 0.25rem;">Workstation Login</h3>
+                            <p style="font-size: 0.8rem; opacity: 0.85; margin-bottom: 1.25rem;" id="lockscreen-session-desc">
+                                Enter your student / member ID or tap your NFC smartcard.
+                            </p>
+
+                            <form id="form-workstation-login" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <input type="text" id="ws-username" placeholder="Student ID or NFC (e.g. STU-1001)" style="padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 0.95rem; font-weight: 600;" autofocus required>
+                                <input type="password" id="ws-password" placeholder="Password / PIN" style="padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none; font-size: 0.95rem;" required>
+                                
+                                <button type="submit" class="btn btn-primary" style="padding: 0.75rem; font-size: 1rem; font-weight: 700; margin-top: 0.5rem; background: var(--brand-primary);">
+                                    <i data-lucide="unlock" style="width: 16px;"></i> Unlock Workstation
+                                </button>
+                            </form>
+
+                            <!-- Error Alert Box -->
+                            <div id="ws-login-error" style="display: none; margin-top: 1rem; padding: 0.75rem; border-radius: 8px; background: rgba(239, 68, 68, 0.25); border: 1px solid rgba(239, 68, 68, 0.5); font-size: 0.8rem; color: #fca5a5; text-align: left;"></div>
+                        </div>
+
+                        <!-- Footer Security Notice -->
+                        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; opacity: 0.8;">
+                            <span>Focus Policy: Single-App Lockdown</span>
+                            <span>Usage Recorded to ERP Engine</span>
+                        </div>
+                    </div>
+
+                    <!-- STATE B: WORKSTATION UNLOCKED DESKTOP (FOCUS ENFORCED) -->
+                    <div id="client-unlocked-desktop" class="win-desktop" style="display: none;">
+                        <!-- Desktop Main Workspace Area -->
+                        <div style="flex: 1; padding: 1.5rem; display: flex; flex-direction: column; background: #f8fafc; overflow-y: auto;">
+                            
+                            <!-- App Workspace Window Header -->
+                            <div style="background: #1e293b; color: white; border-radius: 8px 8px 0 0; padding: 0.5rem 1rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; font-size: 0.85rem;" id="active-app-title">
+                                    <i data-lucide="file-spreadsheet" style="width: 16px; color: #22c55e;"></i> Microsoft Excel - Period 5 Practical Workbook.xlsx [Focus Mode]
+                                </div>
+                                <div style="display: flex; gap: 0.35rem;">
+                                    <span style="background: rgba(34,197,94,0.2); color: #4ade80; font-size: 0.7rem; font-weight: 700; padding: 0.1rem 0.5rem; border-radius: 4px;">APPROVED APP</span>
+                                </div>
+                            </div>
+
+                            <!-- INTERACTIVE APP 1: SPREADSHEET (EXCEL MODE) -->
+                            <div id="app-excel-workspace" style="background: white; border: 1px solid #cbd5e1; border-top: none; border-radius: 0 0 8px 8px; padding: 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.75rem;">
+                                <div style="display: flex; gap: 0.5rem; align-items: center; background: #f1f5f9; padding: 0.35rem 0.75rem; border-radius: 4px; font-family: var(--font-mono); font-size: 0.85rem;">
+                                    <span style="font-weight: 700; color: var(--text-muted);">fx</span>
+                                    <input type="text" id="excel-formula-bar" value="=SUM(B2:B5)" style="flex: 1; border: none; background: transparent; outline: none; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600;">
+                                </div>
+
+                                <div style="overflow-x: auto;">
+                                    <table style="border-collapse: collapse; width: 100%;">
+                                        <thead>
+                                            <tr style="background: #e2e8f0; font-size: 0.75rem;">
+                                                <th style="width: 40px; border: 1px solid #cbd5e1; padding: 4px; text-align: center;">#</th>
+                                                <th style="border: 1px solid #cbd5e1; padding: 4px;">A (Subject)</th>
+                                                <th style="border: 1px solid #cbd5e1; padding: 4px;">B (Marks)</th>
+                                                <th style="border: 1px solid #cbd5e1; padding: 4px;">C (Grade)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td style="text-align: center; background: #f1f5f9; font-size: 0.75rem; font-weight: 700;">1</td>
+                                                <td><input class="excel-cell" value="Mathematics"></td>
+                                                <td><input class="excel-cell" value="88"></td>
+                                                <td><input class="excel-cell" value="A"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: center; background: #f1f5f9; font-size: 0.75rem; font-weight: 700;">2</td>
+                                                <td><input class="excel-cell" value="Computer Science"></td>
+                                                <td><input class="excel-cell" value="95"></td>
+                                                <td><input class="excel-cell" value="A+"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: center; background: #f1f5f9; font-size: 0.75rem; font-weight: 700;">3</td>
+                                                <td><input class="excel-cell" value="Physics"></td>
+                                                <td><input class="excel-cell" value="91"></td>
+                                                <td><input class="excel-cell" value="A+"></td>
+                                            </tr>
+                                            <tr>
+                                                <td style="text-align: center; background: #f1f5f9; font-size: 0.75rem; font-weight: 700;">4</td>
+                                                <td><input class="excel-cell" value="Total Calculated" style="font-weight: 700;"></td>
+                                                <td><input class="excel-cell" value="274" style="font-weight: 700; color: #16a34a;"></td>
+                                                <td><input class="excel-cell" value="Distinction" style="font-weight: 700; color: #16a34a;"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Forbidden Apps Test Toolbar -->
+                            <div style="margin-top: 1rem; display: flex; gap: 0.5rem; align-items: center;">
+                                <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted);">Blocked App Interception Test:</span>
+                                <button class="btn btn-outline btn-sm btn-try-blocked" data-app="YouTube / Streaming" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;"><i data-lucide="video" style="width: 12px;"></i> Launch YouTube</button>
+                                <button class="btn btn-outline btn-sm btn-try-blocked" data-app="Steam / Video Games" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;"><i data-lucide="gamepad-2" style="width: 12px;"></i> Launch Games</button>
+                                <button class="btn btn-outline btn-sm btn-try-blocked" data-app="Social Media / Chat" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;"><i data-lucide="message-circle" style="width: 12px;"></i> Open Social Chat</button>
+                            </div>
+                        </div>
+
+                        <!-- Windows Taskbar -->
+                        <div class="win-taskbar">
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="display: flex; align-items: center; gap: 0.4rem; background: rgba(255,255,255,0.15); padding: 0.25rem 0.65rem; border-radius: 4px; font-weight: 700; font-size: 0.8rem;">
+                                    <i data-lucide="user" style="width: 14px;"></i> <span id="desktop-user-display">Student User</span>
+                                </div>
+                                <span style="font-size: 0.75rem; opacity: 0.8; font-family: var(--font-mono);" id="desktop-terminal-label">Terminal: Active</span>
+                            </div>
+
+                            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                                <div style="font-size: 0.75rem; background: rgba(34,197,94,0.2); color: #4ade80; padding: 0.2rem 0.5rem; border-radius: 4px; font-weight: 700;">
+                                    ● Focus Session: <span id="desktop-timer">00:45:12</span>
+                                </div>
+                                <button class="btn btn-outline btn-sm" id="btn-ws-logoff" style="color: #f87171; border-color: rgba(239,68,68,0.4); padding: 0.25rem 0.65rem; font-size: 0.75rem;">
+                                    <i data-lucide="log-out" style="width: 14px;"></i> End & Log Off
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: TEACHER & ADMIN REMOTE POLICY CONSOLE -->
+                <div id="section-admin-view" style="display: none; margin-top: 1rem;">
+                    <div class="card card-glass" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.25rem;">Active Classroom Policy Configuration</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.25rem;">Configure allowed app whitelists and single-student access restrictions for the current period.</p>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Classroom Allowed App Whitelist Mode</label>
+                                <select id="admin-policy-mode">
+                                    <option value="EXCEL_ONLY">1. Excel & Spreadsheets Class (Blocks Games, Web, Social)</option>
+                                    <option value="PYTHON_CODING">2. Python & Coding Practical (VS Code & Terminal Only)</option>
+                                    <option value="RESEARCH_BROWSER">3. Academic Research (Library Catalog & JSTOR)</option>
+                                    <option value="EXAM_LOCKDOWN">4. Strict Exam Lockdown (Full PC Lock)</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 0;">
+                                <label>Strict Single-Student Machine Matching</label>
+                                <select id="admin-strict-toggle">
+                                    <option value="true">ENFORCED (Only assigned student can log in)</option>
+                                    <option value="false">FLEXIBLE (Any enrolled student in class)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem; justify-content: flex-end;">
+                            <button class="btn btn-outline" id="btn-broadcast-lab-alert"><i data-lucide="megaphone" style="width: 16px;"></i> Broadcast Alert to All PCs</button>
+                            <button class="btn btn-primary" id="btn-apply-policy"><i data-lucide="check" style="width: 16px;"></i> Apply Policy to All Workstations</button>
+                        </div>
+                    </div>
+
+                    <!-- Workstation Assignment Grid Table -->
+                    <div class="card card-glass" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Student Machine Seating Allocation</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Period 5: CS-B Practical Session Roster</p>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Machine Code</th>
+                                        <th>Assigned Student Name</th>
+                                        <th>Register ID</th>
+                                        <th>Class / Grade</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Teacher Override</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignments-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="workstation_agent.js"></script>
+</body>
+</html>

@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Self-Service Library Kiosk - TGI SCHOOL ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        .kiosk-btn-tile {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1rem;
+            cursor: pointer;
+            transition: all var(--transition-bounce);
+            box-shadow: var(--shadow-md);
+        }
+        .kiosk-btn-tile:hover {
+            transform: translateY(-6px) scale(1.02);
+            border-color: var(--brand-primary);
+            box-shadow: 0 16px 32px var(--brand-glow);
+        }
+        .kiosk-icon-box {
+            width: 72px;
+            height: 72px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        /* Mobile Kiosk Styles */
+        @media (max-width: 768px) {
+            .kiosk-btn-tile {
+                padding: 2rem 1rem;
+                min-height: 160px;
+            }
+            
+            .kiosk-icon-box {
+                width: 64px;
+                height: 64px;
+                font-size: 1.75rem;
+            }
+            
+            .kiosk-btn-tile h3 {
+                font-size: 1.2rem;
+            }
+            
+            .kiosk-btn-tile p {
+                font-size: 0.85rem;
+            }
+            
+            #borrow-step-card .kiosk-icon-box {
+                width: 72px;
+                height: 72px;
+            }
+            
+            #kiosk-student-input,
+            #kiosk-book-barcode-input,
+            #kiosk-return-barcode-input,
+            #kiosk-account-search-id {
+                font-size: 1rem !important;
+                padding: 1rem !important;
+            }
+            
+            .btn-kiosk-back {
+                padding: 0.75rem 1rem !important;
+                font-size: 0.9rem !important;
+            }
+            
+            /* Stack the borrow workflow columns on mobile */
+            #borrow-step-books > div {
+                display: flex !important;
+                flex-direction: column !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            header {
+                padding: 1rem !important;
+            }
+            
+            #kiosk-brand-title {
+                font-size: 1.1rem !important;
+            }
+            
+            main {
+                padding: 1.5rem 1rem !important;
+            }
+            
+            .kiosk-btn-tile {
+                padding: 1.5rem 0.75rem;
+                min-height: 140px;
+            }
+        }
+    
+        @keyframes face-scan-anim {
+            0% { top: 10%; opacity: 0.8; }
+            50% { top: 90%; opacity: 1; }
+            100% { top: 10%; opacity: 0.8; }
+        }
+    </style>
+</head>
+<body style="background: radial-gradient(circle at top right, rgba(59, 130, 246, 0.12), transparent 40%), var(--bg-primary); min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Kiosk Top Header -->
+    <header style="padding: 1.25rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--bg-glass-strong); backdrop-filter: blur(16px);">
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div id="kiosk-brand-logo" style="width: 44px; height: 44px; border-radius: 12px; background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-brand);">
+                <i data-lucide="library" style="width: 24px; height: 24px;"></i>
+            </div>
+            <div>
+                <h1 id="kiosk-brand-title" style="font-size: 1.35rem; font-weight: 800; margin: 0; color: var(--text-primary); letter-spacing: -0.02em;">TGI SCHOOL LIBRARY KIOSK</h1>
+                <p id="kiosk-brand-tagline" style="font-size: 0.75rem; color: var(--text-muted); margin: 0; font-weight: 700; text-transform: uppercase;">Self-Service Lending, Returns & Reading Pass</p>
+            </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="background: rgba(16, 185, 129, 0.1); color: var(--color-success); padding: 0.4rem 0.85rem; border-radius: var(--radius-full); font-size: 0.8rem; font-weight: 700; display: flex; align-items: center; gap: 0.4rem;">
+                <span class="badge-dot"></span> NFC & Scanner Ready
+            </div>
+            <div id="kiosk-live-clock" style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 800; color: var(--text-primary);">--:--:--</div>
+            <a href="index.html" class="btn btn-outline btn-sm" style="border-radius: var(--radius-full);"><i data-lucide="arrow-left" style="width: 14px;"></i> Exit to ERP</a>
+        </div>
+    </header>
+
+    <!-- Main Kiosk View Area -->
+    <main style="flex: 1; max-width: 1100px; margin: 0 auto; width: 100%; padding: 2.5rem 1.5rem; display: flex; flex-direction: column; justify-content: center;">
+        
+        <!-- STEP 1: HOME MODE SELECTION TILES -->
+        <div id="kiosk-home-view" style="display: block;">
+            <div style="text-align: center; margin-bottom: 2.5rem;">
+                <span class="badge badge-brand" style="font-size: 0.8rem; padding: 0.3rem 0.75rem; margin-bottom: 0.5rem;">TOUCHSCREEN KIOSK</span>
+                <h2 style="font-size: 2.25rem; font-weight: 900; letter-spacing: -0.03em; margin-bottom: 0.5rem;">What would you like to do today?</h2>
+                <p style="color: var(--text-secondary); font-size: 1.05rem;">Tap a button below or tap your student NFC smartcard on the reader.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.75rem;">
+                <!-- Tile 1: Borrow Books -->
+                <div class="kiosk-btn-tile" id="btn-mode-borrow">
+                    <div class="kiosk-icon-box" style="background: rgba(59, 130, 246, 0.12); color: var(--brand-primary);">
+                        <i data-lucide="book-plus" style="width: 38px; height: 38px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.35rem;">Borrow Books</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Tap student ID card & scan book barcodes to check out.</p>
+                    </div>
+                    <span class="badge badge-brand" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">Self Check-Out</span>
+                </div>
+
+                <!-- Tile 2: Return Books -->
+                <div class="kiosk-btn-tile" id="btn-mode-return">
+                    <div class="kiosk-icon-box" style="background: rgba(16, 185, 129, 0.12); color: var(--color-success);">
+                        <i data-lucide="book-check" style="width: 38px; height: 38px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.35rem;">Return / Drop Box</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Scan book barcode and drop into the return slot.</p>
+                    </div>
+                    <span class="badge badge-success" style="font-size: 0.75rem; padding: 0.25rem 0.65rem;">1-Tap Return</span>
+                </div>
+
+                <!-- Tile 3: My Library Card -->
+                <div class="kiosk-btn-tile" id="btn-mode-account">
+                    <div class="kiosk-icon-box" style="background: rgba(139, 92, 246, 0.12); color: var(--brand-accent);">
+                        <i data-lucide="user-check" style="width: 38px; height: 38px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.35rem;">My Active Loans</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Check your return due dates & reading hours.</p>
+                    </div>
+                    <span class="badge" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent); font-size: 0.75rem; padding: 0.25rem 0.65rem;">Card Status</span>
+                </div>
+
+                <!-- Tile 4: Ask Thaiba Voice Assistant -->
+                <div class="kiosk-btn-tile" id="btn-mode-thaiba" style="border-color: rgba(147, 51, 234, 0.4); background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(147,51,234,0.08));">
+                    <div class="kiosk-icon-box" style="background: rgba(147, 51, 234, 0.15); color: #9333ea;">
+                        <i data-lucide="mic" style="width: 38px; height: 38px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--text-primary);">Ask Thaiba (AI)</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-muted); margin: 0;">Speak naturally to locate books, find shelf aisles, or ask questions.</p>
+                    </div>
+                    <span class="badge" style="background: rgba(147, 51, 234, 0.15); color: #9333ea; font-size: 0.75rem; padding: 0.25rem 0.65rem;">Voice & Shelf Map</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP: THAIBA VOICE ASSISTANT & SHELF FINDER VIEW -->
+        <div id="kiosk-thaiba-view" class="card card-glass" style="display: none; padding: 2rem; max-width: 800px; margin: 0 auto; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button class="btn btn-outline btn-sm btn-kiosk-back"><i data-lucide="arrow-left" style="width: 14px;"></i> Back</button>
+                    <div>
+                        <h2 style="font-size: 1.35rem; font-weight: 800; margin: 0; display: flex; align-items: center; gap: 0.4rem;">
+                            <i data-lucide="sparkles" style="width: 18px; height: 18px; color: #9333ea;"></i> Thaiba AI Assistant
+                        </h2>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Voice-guided shelf navigation & library inquiries</p>
+                    </div>
+                </div>
+                <div id="thaiba-status-badge" class="badge badge-brand">Ready to Listen</div>
+            </div>
+
+            <!-- Interactive Thaiba Visualizer Circle -->
+            <div style="text-align: center; padding: 1.5rem 0;">
+                <div id="thaiba-mic-ring" style="width: 110px; height: 110px; border-radius: 50%; background: linear-gradient(135deg, rgba(147,51,234,0.15), rgba(59,130,246,0.15)); border: 3px solid rgba(147,51,234,0.4); color: #9333ea; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 20px rgba(147,51,234,0.2);">
+                    <i data-lucide="mic" id="thaiba-mic-icon" style="width: 48px; height: 48px;"></i>
+                </div>
+                
+                <h3 id="thaiba-main-prompt" style="font-size: 1.25rem; font-weight: 800; margin: 0 0 0.5rem 0;">Tap the microphone and ask a question</h3>
+                <p id="thaiba-sub-prompt" style="font-size: 0.9rem; color: var(--text-secondary); max-width: 520px; margin: 0 auto 1.5rem auto;">
+                    Try saying: <em>"Where is Introduction to Algorithms?"</em> or <em>"Find books on Science"</em>
+                </p>
+
+                <!-- Voice wave pulse effect container -->
+                <div id="thaiba-waveform" style="display: none; justify-content: center; align-items: center; gap: 6px; height: 32px; margin-bottom: 1.5rem;">
+                    <span style="width: 4px; height: 16px; background: #9333ea; border-radius: 2px;" class="animate-pulse"></span>
+                    <span style="width: 4px; height: 28px; background: #9333ea; border-radius: 2px;" class="animate-pulse"></span>
+                    <span style="width: 4px; height: 20px; background: #9333ea; border-radius: 2px;" class="animate-pulse"></span>
+                    <span style="width: 4px; height: 30px; background: #9333ea; border-radius: 2px;" class="animate-pulse"></span>
+                    <span style="width: 4px; height: 14px; background: #9333ea; border-radius: 2px;" class="animate-pulse"></span>
+                </div>
+
+                <!-- Text Input Fallback -->
+                <div style="display: flex; gap: 0.5rem; max-width: 500px; margin: 0 auto 1.5rem auto;">
+                    <input type="text" id="thaiba-text-input" placeholder="Or type your question here..." style="flex: 1; padding: 0.75rem 1rem;">
+                    <button class="btn btn-primary" id="btn-thaiba-send"><i data-lucide="send" style="width: 16px;"></i> Ask</button>
+                </div>
+
+                <!-- Response Display Box -->
+                <div id="thaiba-response-box" style="display: none; background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 1.25rem; text-align: left; margin-top: 1rem;">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: BORROW WORKFLOW PANEL -->
+        <div id="kiosk-borrow-view" class="card card-glass" style="display: none; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button class="btn btn-outline btn-sm btn-kiosk-back"><i data-lucide="arrow-left" style="width: 14px;"></i> Back</button>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0;">Self Check-Out Desk</h2>
+                </div>
+                <div id="kiosk-student-info" style="font-weight: 700; color: var(--brand-primary); font-size: 0.95rem;"></div>
+            </div>
+
+            <!-- Tap Card Step -->
+            <div id="borrow-step-card" style="text-align: center; padding: 2rem 1rem;">
+                <div style="width: 90px; height: 90px; border-radius: 50%; background: rgba(59, 130, 246, 0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-size: 2.5rem;">
+                    <i data-lucide="radio" style="width: 44px; height: 44px;"></i>
+                </div>
+                <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">1. Tap Student ID Smartcard or Enter ID</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Hold student card against the NFC terminal or scan the barcode on your student ID.</p>
+                
+                <div style="max-width: 400px; margin: 0 auto; display: flex; gap: 0.5rem;">
+                    <input type="text" id="kiosk-student-input" placeholder="e.g. STU-1001" style="font-size: 1.1rem; padding: 0.85rem 1rem; text-align: center; font-weight: 700; font-family: var(--font-mono);" autofocus>
+                    <button class="btn btn-primary" id="btn-kiosk-auth-student" style="padding: 0 1.5rem; font-size: 1rem;">Next &rarr;</button>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">or</span>
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-kiosk-face-scan-launch" style="border-radius: var(--radius-full); font-size: 0.8rem; border-color: #6366f1; color: #6366f1;">
+                        <i data-lucide="scan-face" style="width: 14px;"></i> Contactless Face Check-In
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scan Book Step -->
+            <div id="borrow-step-books" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <!-- Left: Scan Book Input -->
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem;">2. Scan Book Barcode</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 1rem;">Scan the barcode located on the back cover or inside first page of the book.</p>
+                        
+                        <div class="input-group">
+                            <input type="text" id="kiosk-book-barcode-input" placeholder="Scan Book Barcode (e.g. BK-1001)..." style="font-size: 1.05rem; padding: 0.85rem; font-family: var(--font-mono); font-weight: 700;">
+                        </div>
+                        <button class="btn btn-primary" id="btn-kiosk-add-book" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+                            <i data-lucide="plus" style="width: 18px;"></i> Add Book to Checkout
+                        </button>
+                    </div>
+
+                    <!-- Right: Selected Books Queue -->
+                    <div style="background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+                        <div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <h4 style="font-size: 1rem; font-weight: 700; margin: 0;">Items to Borrow</h4>
+                                <span class="badge badge-brand" id="kiosk-cart-count">0 Items</span>
+                            </div>
+                            <div id="kiosk-cart-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 200px; overflow-y: auto;">
+                                <div style="text-align: center; padding: 2rem; color: var(--text-muted); font-size: 0.85rem;">No books scanned yet.</div>
+                            </div>
+                        </div>
+
+                        <div style="border-top: 1px solid var(--border-color); padding-top: 1rem; margin-top: 1rem;">
+                            <button class="btn btn-primary" id="btn-kiosk-finish-borrow" style="width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 800; background: var(--color-success); border-color: var(--color-success);">
+                                <i data-lucide="check-circle" style="width: 20px;"></i> Complete & Issue Books (14 Days)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: RETURN WORKFLOW PANEL -->
+        <div id="kiosk-return-view" class="card card-glass" style="display: none; padding: 2rem; text-align: center;">
+            <div style="display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <button class="btn btn-outline btn-sm btn-kiosk-back"><i data-lucide="arrow-left" style="width: 14px;"></i> Back</button>
+                <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0;">Smart Return Drop Box</h2>
+            </div>
+
+            <div style="max-width: 500px; margin: 0 auto; padding: 1.5rem 0;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+                    <i data-lucide="scan-line" style="width: 40px; height: 40px;"></i>
+                </div>
+                <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem;">Scan Book Barcode to Return</h3>
+                <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;">Place the book barcode under the scanner or type the book code below.</p>
+
+                <div style="margin-bottom: 1rem; display: flex; justify-content: center;">
+                    <button type="button" class="btn btn-outline btn-sm" id="btn-toggle-condition-inspector" style="border-radius: var(--radius-full); font-size: 0.8rem; border-color: #0284c7; color: #0284c7;">
+                        <i data-lucide="camera" style="width: 14px;"></i> Smart Drop Box Camera & Condition Inspector
+                    </button>
+                </div>
+
+                <!-- Drop Box Video Inspection Box -->
+                <div id="drop-box-inspector-box" style="display: none; max-width: 440px; margin: 0 auto 1.5rem; background: var(--bg-surface-secondary); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: left;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-weight: 700; font-size: 0.85rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <span class="badge-dot" style="background: var(--color-success);"></span> Drop Chute Camera
+                        </span>
+                        <span id="condition-status-pill" class="badge badge-success" style="font-size: 0.72rem;">Pristine Condition</span>
+                    </div>
+                    <div id="drop-cam-viewport" style="width: 100%; height: 160px; background: #0b0f19; border-radius: 6px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative;">
+                        <video id="drop-chute-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover; display: none;"></video>
+                        <div id="drop-cam-overlay-text" style="text-align: center; color: #94a3b8; font-size: 0.8rem; padding: 1rem;">
+                            <i data-lucide="eye" style="width: 24px; height: 24px; opacity: 0.7; margin-bottom: 0.25rem;"></i>
+                            <div>Drop box inspection lens ready</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);" id="inspection-condition-summary">Auto-inspects spine & cover for stains/tears</span>
+                        <button type="button" class="btn btn-outline btn-sm" id="btn-sim-condition-toggle" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">Simulate Inspection</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <input type="text" id="kiosk-return-barcode-input" placeholder="Scan Book Barcode (e.g. BK-00101)..." style="font-size: 1.1rem; padding: 0.85rem; font-family: var(--font-mono); font-weight: 700; text-align: center;" autofocus>
+                    <button class="btn btn-primary" id="btn-kiosk-submit-return" style="padding: 0 1.5rem; font-size: 1rem; background: var(--color-success); border-color: var(--color-success);">Return</button>
+                </div>
+
+                <!-- Return Success Feedback Area -->
+                <div id="kiosk-return-feedback" style="display: none; padding: 1.25rem; border-radius: var(--radius-md); background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                    <!-- Injected dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: MY ACCOUNT VIEW PANEL -->
+        <div id="kiosk-account-view" class="card card-glass" style="display: none; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <button class="btn btn-outline btn-sm btn-kiosk-back"><i data-lucide="arrow-left" style="width: 14px;"></i> Back</button>
+                    <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0;">My Active Borrowings</h2>
+                </div>
+            </div>
+
+            <div style="max-width: 450px; margin: 0 auto 1.5rem; display: flex; gap: 0.5rem;">
+                <input type="text" id="kiosk-account-search-id" placeholder="Enter Student ID or Tap NFC Card..." style="font-size: 1rem; padding: 0.75rem 1rem; font-family: var(--font-mono);" autofocus>
+                <button class="btn btn-primary" id="btn-kiosk-lookup-account">Check</button>
+            </div>
+
+            <div id="kiosk-account-results" style="display: none;">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast container -->
+    <div id="toast-container"></div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="kiosk.js"></script>
+
+    <!-- Mobile Bottom Navigation for Kiosk -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" role="navigation" aria-label="Primary navigation" style="display: none;">
+        <ul>
+            <li>
+                <a href="#" data-nav="home" class="nav-link" id="mobile-kiosk-home">
+                    <i data-lucide="home" aria-hidden="true"></i>
+                    <span>Home</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="borrow" class="nav-link" id="mobile-kiosk-borrow">
+                    <i data-lucide="book-plus" aria-hidden="true"></i>
+                    <span>Borrow</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="return" class="nav-link" id="mobile-kiosk-return">
+                    <i data-lucide="book-check" aria-hidden="true"></i>
+                    <span>Return</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="account" class="nav-link" id="mobile-kiosk-account">
+                    <i data-lucide="user-check" aria-hidden="true"></i>
+                    <span>Account</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        // Mobile bottom nav for kiosk - only show on mobile
+        document.addEventListener('DOMContentLoaded', () => {
+            const isMobile = window.innerWidth <= 768;
+            const mobileNav = document.getElementById('mobile-bottom-nav');
+            
+            if (isMobile && mobileNav) {
+                mobileNav.style.display = 'block';
+                
+                const navLinks = mobileNav.querySelectorAll('.nav-link');
+                const views = {
+                    home: 'kiosk-home-view',
+                    borrow: 'kiosk-borrow-view',
+                    return: 'kiosk-return-view',
+                    account: 'kiosk-account-view'
+                };
+                
+                function showView(viewId) {
+                    Object.values(views).forEach(v => {
+                        document.getElementById(v)?.style.setProperty('display', 'none', 'important');
+                    });
+                    document.getElementById(viewId)?.style.setProperty('display', 'block', 'important');
+                }
+                
+                navLinks.forEach(link => {
+                    link.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                        const viewId = views[link.dataset.nav];
+                        if (viewId) showView(viewId);
+                    });
+                });
+                
+                // Set initial active
+                document.querySelector('#mobile-bottom-nav [data-nav="home"]')?.classList.add('active');
+            }
+            
+            // Handle resize
+            window.addEventListener('resize', () => {
+                const isMobileNow = window.innerWidth <= 768;
+                if (mobileNav) {
+                    mobileNav.style.display = isMobileNow ? 'block' : 'none';
+                }
+            });
+            
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+
+    <!-- Modal: Contactless Face Check-In -->
+    <div class="modal-overlay" id="modal-kiosk-face-scan" style="display: none;">
+        <div class="modal-content" style="max-width: 440px; text-align: center; padding: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 style="margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="scan-face" style="color: #6366f1; width: 22px;"></i> Face Check-In
+                </h3>
+                <button type="button" class="btn btn-outline btn-sm btn-icon" id="btn-close-face-scan">&times;</button>
+            </div>
+            
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Look directly into the camera. Biometrics verify locally without sending photos outside the library.
+            </p>
+
+            <!-- Video feed with scanning oval overlay -->
+            <div style="position: relative; width: 240px; height: 240px; margin: 0 auto 1.25rem; border-radius: 50%; overflow: hidden; background: #0a0f1d; border: 4px solid #6366f1; box-shadow: 0 0 24px rgba(99, 102, 241, 0.35);">
+                <video id="face-scan-video" autoplay playsinline muted style="width: 100%; height: 100%; object-fit: cover;"></video>
+                <div id="face-scan-laser" style="position: absolute; top: 10%; left: 0; right: 0; height: 3px; background: #6366f1; box-shadow: 0 0 10px #6366f1; animation: face-scan-anim 2s infinite ease-in-out;"></div>
+            </div>
+
+            <div id="face-scan-status" style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 1.5rem;">
+                Scanning patron features...
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; justify-content: center;">
+                <button type="button" class="btn btn-outline" id="btn-cancel-face-scan">Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

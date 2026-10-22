@@ -1,0 +1,25 @@
+# Secrets and Tokens
+supabase_token.txt
+github_token.txt
+.env
+.env.local
+
+# Build Caches and Toolchains
+jdks/
+caches/
+daemon/
+native/
+wrapper/
+.gradle/
+build/
+.idea/
+.tmp/
+downloads/
+*.apk
+*.jar
+
+# Logs and OS files
+*.log
+.DS_Store
+Thumbs.db
+node_modules/

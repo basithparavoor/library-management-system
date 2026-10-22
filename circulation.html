@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Circulation Desk - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;"><span class="badge-dot"></span> RAPID SCAN</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Barcode Enabled</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Circulation Desk</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Check out books to students or process returns with instant verification.</p>
+                    </div>
+                </div>
+
+                <!-- Circulation Panels Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+                    
+                    <!-- ISSUE BOOK PANEL -->
+                    <div class="card card-glass" style="border-top: 4px solid var(--brand-primary); display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                            <div>
+                                <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Issue / Check Out</h2>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Borrow books to registered members</p>
+                            </div>
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(59, 130, 246, 0.12); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="book-up" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+
+                        <form id="form-issue">
+                            <!-- Student Barcode Input -->
+                            <div class="input-group">
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Student ID / Barcode *</span>
+                                    <button type="button" class="btn btn-ghost btn-sm" onclick="window.openScannerFor('issue-student-id')" style="color: var(--brand-primary); padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+                                        <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Scan Camera
+                                    </button>
+                                </label>
+                                <div style="position: relative;">
+                                    <i data-lucide="user" style="position: absolute; left: 1rem; top: 0.85rem; color: var(--text-muted); width: 16px; height: 16px;"></i>
+                                    <input type="text" id="issue-student-id" required autocomplete="off" placeholder="Scan or type Student ID (e.g. STU-1001)" style="padding-left: 2.75rem;">
+                                </div>
+                            </div>
+
+                            <!-- Live Student Verification Card -->
+                            <div id="issue-student-preview" style="display: none; background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.25rem;">
+                                <!-- Injected via JS -->
+                            </div>
+
+                            <!-- Book Barcode Input -->
+                            <div class="input-group">
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Book Copy Barcode *</span>
+                                    <button type="button" class="btn btn-ghost btn-sm" onclick="window.openScannerFor('issue-book-barcode')" style="color: var(--brand-primary); padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+                                        <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Scan Camera
+                                    </button>
+                                </label>
+                                <div style="position: relative;">
+                                    <i data-lucide="barcode" style="position: absolute; left: 1rem; top: 0.85rem; color: var(--text-muted); width: 16px; height: 16px;"></i>
+                                    <input type="text" id="issue-book-barcode" required autocomplete="off" placeholder="Scan or type Book Barcode (e.g. ATH-B-123456-1)" style="padding-left: 2.75rem;">
+                                </div>
+                            </div>
+
+                            <!-- Live Book Verification Card -->
+                            <div id="issue-book-preview" style="display: none; background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.25rem;">
+                                <!-- Injected via JS -->
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" id="btn-submit-issue" style="width: 100%; padding: 0.85rem; margin-top: 0.5rem;">
+                                <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i> Process Check Out
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- RETURN BOOK PANEL -->
+                    <div class="card card-glass" style="border-top: 4px solid var(--success); display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                            <div>
+                                <h2 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0;">Return / Check In</h2>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Receive returned books & compute fines</p>
+                            </div>
+                            <div style="width: 40px; height: 40px; border-radius: 10px; background: rgba(16, 185, 129, 0.12); color: var(--success); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="book-down" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+
+                        <form id="form-return">
+                            <div class="input-group" style="margin-bottom: 1.5rem;">
+                                <label style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span>Book Accession Barcode *</span>
+                                    <button type="button" class="btn btn-ghost btn-sm" onclick="window.openScannerFor('return-book-barcode')" style="color: var(--success); padding: 0.2rem 0.5rem; font-size: 0.75rem;">
+                                        <i data-lucide="camera" style="width: 14px; height: 14px;"></i> Scan Camera
+                                    </button>
+                                </label>
+                                <div style="position: relative;">
+                                    <i data-lucide="barcode" style="position: absolute; left: 1rem; top: 0.85rem; color: var(--text-muted); width: 16px; height: 16px;"></i>
+                                    <input type="text" id="return-book-barcode" required autocomplete="off" placeholder="Scan or type Book Barcode to return..." style="padding-left: 2.75rem;">
+                                </div>
+                            </div>
+
+                            <!-- Live Return Active Loan Preview -->
+                            <div id="return-loan-preview" style="display: none; background: var(--bg-muted); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 0.85rem; margin-bottom: 1.5rem;">
+                                <!-- Injected via JS -->
+                            </div>
+
+                            <button type="submit" class="btn btn-success" id="btn-submit-return" style="width: 100%; padding: 0.85rem;">
+                                <i data-lucide="corner-down-left" style="width: 18px; height: 18px;"></i> Process Return
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Live Desk Circulation History -->
+                <div class="card card-glass" style="display: flex; flex-direction: column; margin-top: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Desk Session History</h2>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Recent check-out & check-in activity at this terminal</p>
+                        </div>
+                        <button class="btn btn-ghost btn-sm" id="btn-refresh-history"><i data-lucide="rotate-cw" style="width: 14px;"></i> Refresh</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Transaction Type</th>
+                                    <th>Student Member</th>
+                                    <th>Book Title</th>
+                                    <th>Barcode</th>
+                                    <th>Due / Return Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="desk-history-tbody">
+                                <tr>
+                                    <td colspan="6" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                                        Loading desk history...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Universal Camera Scanner Modal Overlay -->
+    <div id="scanner-modal" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 480px; text-align: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="camera" style="color: var(--brand-primary); width: 20px;"></i> Barcode Scanner
+                </h3>
+                <button onclick="window.closeCameraScanner()" class="btn btn-ghost btn-icon"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            
+            <div id="reader" style="width: 100%; min-height: 280px; overflow: hidden; border-radius: var(--radius-sm); background: #000; margin-bottom: 1rem;"></div>
+            
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1rem;">Point camera directly at the student or book barcode sticker.</p>
+            <button onclick="window.closeCameraScanner()" class="btn btn-outline" style="width: 100%;">Cancel Scan</button>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="circulation_ui.js"></script>
+</body>
+</html>

@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library Storage & Physical Locations - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .storage-tab-btn {
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        .storage-tab-btn.active {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.3);
+            color: var(--brand-accent);
+        }
+        .storage-tab-btn:hover:not(.active) {
+            background: var(--bg-muted);
+            color: var(--text-primary);
+        }
+
+        .storage-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-xs);
+        }
+        .storage-card:hover {
+            border-color: rgba(139, 92, 246, 0.35);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .capacity-bar-bg {
+            height: 8px;
+            background: var(--bg-muted);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.35rem;
+        }
+                .storage-type-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.15rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            width: 100%;
+        }
+        .storage-type-card:hover {
+            border-color: var(--brand-primary);
+            background: var(--bg-muted);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+                .bulk-tab-btn {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .bulk-tab-btn.active {
+            background: var(--bg-card);
+            color: var(--brand-primary);
+            font-weight: 700;
+            box-shadow: var(--shadow-sm);
+        }
+
+
+        /* 2D Physical Bookshelf Matrix Visualizer */
+        .physical-bookshelf-frame {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 0.85rem;
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin-top: 0.75rem;
+        }
+        .bookshelf-tier-row {
+            background: var(--bg-hover);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+        .tier-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 0.3rem;
+        }
+        .tier-compartments-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+        }
+        .compartment-cell {
+            background: var(--bg-card);
+            border: 1.5px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 0.6rem;
+            transition: all var(--transition-fast);
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .compartment-cell:hover {
+            border-color: var(--brand-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .compartment-cell.status-optimal {
+            border-left: 3.5px solid var(--color-success);
+        }
+        .compartment-cell.status-warning {
+            border-left: 3.5px solid var(--color-warning);
+        }
+        .compartment-cell.status-danger {
+            border-left: 3.5px solid var(--color-danger);
+        }
+
+        .storage-type-card:active {
+            transform: translateY(0);
+        }
+
+        .capacity-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modal-storage-pdf-preview, #modal-storage-pdf-preview * { visibility: visible; }
+            #modal-storage-pdf-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem; background: rgba(139,92,246,0.1); color: var(--brand-accent);">PHYSICAL ARCHITECTURE</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Storage Wings, Shelves & Racks</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Library Storage & Locations</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage physical library locations, wings, stack rooms, book shelves, and multi-tier compartment racks.</p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-storage-pdf-report">
+                            <i data-lucide="printer" style="width: 16px;"></i> Print Shelf Audit PDF
+                        </button>
+                        <button class="btn btn-outline" id="btn-storage-csv-export">
+                            <i data-lucide="download" style="width: 16px;"></i> Export Matrix CSV
+                        </button>
+                        <button class="btn btn-primary" id="btn-add-storage-dropdown">
+                            <i data-lucide="plus" style="width: 16px;"></i> Create Storage Unit
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Overview Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="map-pin" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Storage Wings / Rooms</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-wings">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(139,92,246,0.1); color: var(--brand-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="archive" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Book Shelves</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-shelves">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16,185,129,0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="layers" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Rack Compartments</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-racks">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(245,158,11,0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="pie-chart" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Storage Utilization</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-storage-utilization">0%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                    <button class="storage-tab-btn active" data-tab="tab-wings"><i data-lucide="map-pin" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Storage Wings & Zones</button>
+                    <button class="storage-tab-btn" data-tab="tab-shelves"><i data-lucide="archive" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Book Shelves & Genres</button>
+                    <button class="storage-tab-btn" data-tab="tab-racks"><i data-lucide="layers" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Rack Compartments</button>
+                    <button class="storage-tab-btn" data-tab="tab-visualizer"><i data-lucide="bar-chart-2" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Live Capacity Matrix</button>
+                </div>
+
+                <!-- TAB 1: STORAGE WINGS & ZONES -->
+                <div id="tab-wings" class="tab-content-panel" style="display: block;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Library Storage Wings & Floor Zones</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Manage distinct library rooms, floors, and reading wing boundaries.</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-open-wing-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Storage Wing</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-wings" class="custom-checkbox"></th>
+                                        <th style="width: 110px;">Wing Code</th>
+                                        <th style="min-width: 220px;">Storage Wing & Description</th>
+                                        <th style="width: 140px;">Floor Zone</th>
+                                        <th style="min-width: 200px;">Shelves, Racks & Capacity</th>
+                                        <th style="text-align: right; width: 150px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wings-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: BOOK SHELVES -->
+                <div id="tab-shelves" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Book Shelves & Category Focus</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Assign subject categories, tier arrangements, and maximum volume limits.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="btn btn-outline btn-sm" id="btn-tab-bulk-shelves"><i data-lucide="layers" style="width: 14px;"></i> Bulk Generate Shelves</button>
+                                <button class="btn btn-primary btn-sm" id="btn-open-shelf-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Book Shelf</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-shelves" class="custom-checkbox"></th>
+                                        <th style="width: 120px;">Shelf Code</th>
+                                        <th style="min-width: 220px;">Book Shelf & Classification</th>
+                                        <th style="width: 140px;">Parent Wing</th>
+                                        <th style="min-width: 200px;">Structure & Capacity</th>
+                                        <th style="text-align: right; width: 150px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shelves-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: RACK COMPARTMENTS -->
+                <div id="tab-racks" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Rack Compartments & Multi-Tier Shelving</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Detailed physical racks, barcode zones, and real-time book count tracking.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button class="btn btn-outline btn-sm" id="btn-tab-bulk-racks"><i data-lucide="layers" style="width: 14px;"></i> Bulk Generate Racks</button>
+                                <button class="btn btn-primary btn-sm" id="btn-open-rack-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Rack Compartment</button>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-racks" class="custom-checkbox"></th>
+                                        <th style="width: 120px;">Rack Code</th>
+                                        <th style="min-width: 220px;">Compartment & Parent Shelf</th>
+                                        <th style="width: 160px;">Grid Position</th>
+                                        <th style="min-width: 200px;">Capacity & Occupancy</th>
+                                        <th style="text-align: right; width: 150px;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="racks-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: LIVE CAPACITY VISUALIZER -->
+                <div id="tab-visualizer" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Live Shelf Capacity & Occupancy Matrix</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Visual diagram of library storage zones with color-coded shelf utilization meters.</p>
+                            </div>
+                        </div>
+
+                        <div id="storage-visualizer-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+        <!-- MODAL: SELECT STORAGE UNIT TYPE -->
+    <div id="modal-select-storage-type" class="app-dialog-overlay">
+        <div class="app-dialog modal-responsive" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <div style="width: 38px; height: 38px; border-radius: var(--radius-sm); background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-brand);">
+                        <i data-lucide="layers" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0; color: var(--text-primary);">Create Storage Unit</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Choose which physical storage hierarchy level to configure</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon close-select-type-modal" title="Close"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <!-- Choice 1: Wing -->
+                <div class="storage-type-card" id="btn-choice-wing">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.12); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="map-pin" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Storage Wing / Room / Hall</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Top-level physical zones, building wings, floor boundaries, and reading rooms.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+
+                <!-- Choice 2: Shelf -->
+                <div class="storage-type-card" id="btn-choice-shelf">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(99,102,241,0.12); color: #6366f1; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="archive" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Book Shelf & Category Stacks</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Physical shelving units assigned to subject genres, tiers, and floor locations.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+
+                <!-- Choice 3: Rack -->
+                <div class="storage-type-card" id="btn-choice-rack">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16,185,129,0.12); color: var(--color-success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="layers" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Rack Compartment / Shelf Tier</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Granular shelf compartments, barcode slots, and individual book count capacity.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+
+                <!-- Choice 4: Bulk Wizard -->
+                <div class="storage-type-card" id="btn-choice-bulk" style="border: 1.5px dashed var(--brand-primary); background: rgba(59, 130, 246, 0.04);">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.15); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="copy-plus" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--brand-primary); margin-bottom: 0.2rem;">Bulk Storage Creation Wizard</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Rapidly batch-create multiple shelves, rack series, or auto-compartments in 1 click.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--brand-primary);"></i>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.25rem; padding-top: 0.85rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline close-select-type-modal" style="font-size: 0.85rem; padding: 0.45rem 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT WING -->
+    <div id="modal-wing" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-wing-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Storage Wing</h3>
+                <button class="btn btn-ghost btn-icon close-wing-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-wing">
+                <input type="hidden" id="wing-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Wing Code *</label>
+                        <input type="text" id="wing-code" placeholder="e.g. WING-N" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Wing / Room Name *</label>
+                        <input type="text" id="wing-name" placeholder="e.g. North Reference Stack" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Floor Level</label>
+                        <input type="text" id="wing-floor" placeholder="e.g. 1st Floor (East)">
+                    </div>
+                    <div class="input-group">
+                        <label>Primary Focus</label>
+                        <input type="text" id="wing-focus" placeholder="e.g. Science & Engineering">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Max Volume Capacity (Books)</label>
+                    <input type="number" id="wing-capacity" min="50" value="5000">
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-wing-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Wing</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT SHELF -->
+    <div id="modal-shelf" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-shelf-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Book Shelf</h3>
+                <button class="btn btn-ghost btn-icon close-shelf-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-shelf">
+                <input type="hidden" id="shelf-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Shelf Code *</label>
+                        <input type="text" id="shelf-code" placeholder="e.g. SH-01" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Shelf Name *</label>
+                        <input type="text" id="shelf-name" placeholder="e.g. Computer Science Section" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Parent Storage Wing *</label>
+                    <select id="shelf-wing-select" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Subject / Category Genre</label>
+                        <input type="text" id="shelf-genre" placeholder="e.g. Software & Algorithms">
+                    </div>
+                    <div class="input-group">
+                        <label>Total Tiers / Levels</label>
+                        <input type="number" id="shelf-tiers" min="1" max="10" value="5">
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Total Book Capacity</label>
+                    <input type="number" id="shelf-capacity" min="20" value="500">
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-shelf-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Shelf</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT RACK -->
+    <div id="modal-rack" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-rack-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Rack Compartment</h3>
+                <button class="btn btn-ghost btn-icon close-rack-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-rack">
+                <input type="hidden" id="rack-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Rack Code *</label>
+                        <input type="text" id="rack-code" placeholder="e.g. RK-101" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Rack Name *</label>
+                        <input type="text" id="rack-name" placeholder="e.g. Tier 1 - Algorithms" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Parent Shelf *</label>
+                    <select id="rack-shelf-select" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Row / Shelf Tier (Vertical) *</label>
+                        <input type="text" id="rack-row" placeholder="e.g. Tier 1 (or Row A)" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Column / Shelf Bay (Horizontal) *</label>
+                        <input type="text" id="rack-col" placeholder="e.g. Col 1 (or Bay A)" required>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Max Slot Capacity</label>
+                        <input type="number" id="rack-capacity" min="10" value="80">
+                    </div>
+                    <div class="input-group">
+                        <label>Current Stored Volumes</label>
+                        <input type="number" id="rack-count" min="0" value="0">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-rack-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Rack</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <!-- MODAL: BULK STORAGE WIZARD (SHELVES & RACKS) -->
+    <div id="modal-bulk-storage" class="app-dialog-overlay">
+        <div class="app-dialog modal-responsive" style="max-width: 660px; text-align: left; max-height: 90vh; overflow-y: auto;">
+            <!-- Header -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <div style="width: 38px; height: 38px; border-radius: var(--radius-sm); background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-brand);">
+                        <i data-lucide="layers" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: var(--text-primary);">Bulk Storage Creation Wizard</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Batch create multiple shelves or rack compartments in seconds</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon close-bulk-modal" title="Close"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <!-- Mode Switcher Tabs -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; background: var(--bg-hover); padding: 0.35rem; border-radius: var(--radius-md);">
+                <button type="button" class="btn btn-sm bulk-tab-btn active" data-tab="bulk-shelves-panel" style="flex: 1; font-weight: 700;">
+                    <i data-lucide="archive" style="width: 14px; margin-right: 4px;"></i> Bulk Shelves
+                </button>
+                <button type="button" class="btn btn-sm bulk-tab-btn" data-tab="bulk-racks-panel" style="flex: 1; font-weight: 700;">
+                    <i data-lucide="layers" style="width: 14px; margin-right: 4px;"></i> Bulk Racks
+                </button>
+                <button type="button" class="btn btn-sm bulk-tab-btn" data-tab="bulk-csv-panel" style="flex: 1; font-weight: 700;">
+                    <i data-lucide="file-text" style="width: 14px; margin-right: 4px;"></i> Quick Paste / CSV
+                </button>
+            </div>
+
+            <!-- TAB 1: BULK SHELVES -->
+            <form id="form-bulk-shelves" class="bulk-tab-panel">
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-weight: 600; font-size: 0.82rem;">Target Storage Wing *</label>
+                    <select id="bulk-shelf-wing" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Shelf Code Prefix *</label>
+                        <input type="text" id="bulk-shelf-prefix" value="SH-" required placeholder="e.g. SH-">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Base Name Pattern *</label>
+                        <input type="text" id="bulk-shelf-name" value="Book Shelf" required placeholder="e.g. Book Shelf">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Start Number</label>
+                        <input type="number" id="bulk-shelf-start" value="1" min="1" required>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Quantity to Create *</label>
+                        <input type="number" id="bulk-shelf-count" value="5" min="1" max="50" required>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Digits (Zero Pad)</label>
+                        <select id="bulk-shelf-pad" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                            <option value="2">2 Digits (01, 02...)</option>
+                            <option value="3">3 Digits (001, 002...)</option>
+                            <option value="1">No Padding (1, 2...)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Subject / Genre</label>
+                        <input type="text" id="bulk-shelf-genre" value="General Collection" placeholder="e.g. Science">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Tiers / Levels</label>
+                        <input type="number" id="bulk-shelf-tiers" value="5" min="1" max="10">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Capacity / Shelf</label>
+                        <input type="number" id="bulk-shelf-capacity" value="500" min="20">
+                    </div>
+                </div>
+
+                <!-- Auto-generate Racks Checkbox -->
+                <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1rem;">
+                    <label style="display: flex; align-items: flex-start; gap: 0.6rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="bulk-shelf-auto-racks" checked class="custom-checkbox" style="margin-top: 3px;">
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 0.85rem; color: var(--brand-primary);">⚡ Automatically generate 2D rack matrix (Rows × Columns)</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Creates ready-to-use rack compartments mapped to exact physical Tier (Row) and Bay (Column) coordinates.</div>
+                        </div>
+                    </label>
+                    <div id="bulk-shelf-grid-opts" style="display: flex; gap: 0.85rem; margin-top: 0.75rem; padding-top: 0.65rem; border-top: 1px dashed rgba(59,130,246,0.2);">
+                        <div class="input-group" style="flex: 1;">
+                            <label style="font-size: 0.75rem; font-weight: 600;">Columns (Bays) per Tier</label>
+                            <input type="number" id="bulk-shelf-cols-per-tier" value="2" min="1" max="10" style="padding: 0.4rem; font-size: 0.85rem;">
+                        </div>
+                        <div class="input-group" style="flex: 1;">
+                            <label style="font-size: 0.75rem; font-weight: 600;">Slots per Compartment</label>
+                            <input type="number" id="bulk-shelf-slots-per-comp" value="50" min="10" style="padding: 0.4rem; font-size: 0.85rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Preview Card -->
+                <div style="background: var(--bg-hover); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">Generation Preview</div>
+                    <div id="bulk-shelf-preview" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.4;">
+                        Will create 5 shelves: <code>SH-01</code> to <code>SH-05</code> (Total Capacity: 2,500 vols) + 25 auto-generated rack tiers
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-bulk-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-bulk-shelves">
+                        <i data-lucide="plus-circle" style="width: 16px;"></i> Generate Shelves
+                    </button>
+                </div>
+            </form>
+
+            <!-- TAB 2: BULK RACKS -->
+            <form id="form-bulk-racks" class="bulk-tab-panel" style="display: none;">
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-weight: 600; font-size: 0.82rem;">Target Book Shelf *</label>
+                    <select id="bulk-rack-shelf" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Rack Code Prefix *</label>
+                        <input type="text" id="bulk-rack-prefix" value="RK-" required placeholder="e.g. RK-">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Base Name Pattern *</label>
+                        <input type="text" id="bulk-rack-name" value="Compartment" required placeholder="e.g. Compartment">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Tiers / Rows (Vertical) *</label>
+                        <input type="number" id="bulk-rack-rows-count" value="4" min="1" max="20" required>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Bays / Columns (Horizontal) *</label>
+                        <input type="number" id="bulk-rack-cols-count" value="3" min="1" max="15" required>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Naming Pattern</label>
+                        <select id="bulk-rack-naming-pattern" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                            <option value="MATRIX">Coordinate (R1C1, R1C2...)</option>
+                            <option value="SEQUENTIAL">Sequential (01, 02, 03...)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Slots / Compartment</label>
+                        <input type="number" id="bulk-rack-capacity" value="50" min="10">
+                    </div>
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Initial Stored</label>
+                        <input type="number" id="bulk-rack-stored" value="0" min="0">
+                    </div>
+                </div>
+
+                <!-- Live Preview Card -->
+                <div style="background: var(--bg-hover); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.35rem;">Generation Preview</div>
+                    <div id="bulk-rack-preview" style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary); line-height: 1.4;">
+                        Will create 5 racks: <code>RK-01</code> to <code>RK-05</code> (Total Slots: 400)
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-bulk-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-bulk-racks">
+                        <i data-lucide="plus-circle" style="width: 16px;"></i> Generate Racks
+                    </button>
+                </div>
+            </form>
+
+            <!-- TAB 3: QUICK PASTE / CSV -->
+            <form id="form-bulk-csv" class="bulk-tab-panel" style="display: none;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Entity to Import *</label>
+                        <select id="bulk-csv-type" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                            <option value="shelves">Book Shelves</option>
+                            <option value="racks">Rack Compartments</option>
+                        </select>
+                    </div>
+                    <div class="input-group" id="bulk-csv-parent-group">
+                        <label style="font-weight: 600; font-size: 0.82rem;" id="bulk-csv-parent-label">Parent Wing *</label>
+                        <select id="bulk-csv-parent-select" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                            <!-- Dynamic -->
+                        </select>
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                        <label style="font-weight: 600; font-size: 0.82rem;">Paste CSV / Tab-Separated Data *</label>
+                        <button type="button" id="btn-bulk-load-sample" class="btn btn-ghost btn-sm" style="font-size: 0.75rem; padding: 2px 6px;">Load Sample</button>
+                    </div>
+                    <textarea id="bulk-csv-text" rows="6" style="width: 100%; font-family: var(--font-mono); font-size: 0.8rem; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary);" placeholder="Code, Name, Genre, Tiers, Capacity
+SH-101, Science & Tech, Technology, 5, 500
+SH-102, Islamic Studies, Religion, 6, 600"></textarea>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 4px;" id="bulk-csv-hint">
+                        Format: <code>Code, Name, Genre, Tiers, Capacity</code> (One record per line)
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-bulk-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-bulk-csv">
+                        <i data-lucide="upload-cloud" style="width: 16px;"></i> Import Batch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    
+    <!-- MODAL: MOVE OR COPY STORAGE UNITS (SHELVES & RACKS) -->
+    <div id="modal-move-copy-storage" class="app-dialog-overlay">
+        <div class="app-dialog modal-responsive" style="max-width: 580px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <div style="width: 38px; height: 38px; border-radius: var(--radius-sm); background: rgba(139,92,246,0.15); color: var(--brand-accent); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="arrow-right-left" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-move-copy-title" style="font-size: 1.2rem; font-weight: 800; margin: 0; color: var(--text-primary);">Move or Copy Storage Unit</h3>
+                        <p id="modal-move-copy-subtitle" style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Relocate or duplicate storage units with book migration</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon close-move-copy-modal" title="Close"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <form id="form-move-copy-storage">
+                <input type="hidden" id="move-copy-entity-type" value="shelf">
+                <input type="hidden" id="move-copy-entity-ids" value="">
+
+                <!-- Selected Unit(s) Summary Banner -->
+                <div id="move-copy-units-summary" style="background: var(--bg-hover); padding: 0.75rem 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); border-left: 3px solid var(--brand-accent);">
+                    Target: 1 Book Shelf selected
+                </div>
+
+                <!-- Action Mode: Move vs Copy -->
+                <div style="margin-bottom: 1.15rem;">
+                    <label style="font-weight: 700; font-size: 0.82rem; margin-bottom: 0.4rem; display: block;">Select Operation *</label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <label class="storage-type-card" style="padding: 0.75rem 0.85rem; cursor: pointer; margin: 0;" id="label-op-move">
+                            <input type="radio" name="move-copy-operation" value="MOVE" checked style="accent-color: var(--brand-primary); margin-right: 6px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">🚚 Move (Relocate)</div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Transfer physical unit to new destination</div>
+                            </div>
+                        </label>
+                        <label class="storage-type-card" style="padding: 0.75rem 0.85rem; cursor: pointer; margin: 0;" id="label-op-copy">
+                            <input type="radio" name="move-copy-operation" value="COPY" style="accent-color: var(--brand-primary); margin-right: 6px;">
+                            <div>
+                                <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">📑 Copy (Duplicate)</div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Create new duplicate under destination</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Destination Selector -->
+                <div class="input-group" id="move-copy-dest-group" style="margin-bottom: 1.15rem;">
+                    <label style="font-weight: 700; font-size: 0.82rem;" id="move-copy-dest-label">Destination Storage Wing *</label>
+                    <select id="move-copy-dest-select" required style="padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+
+                <!-- Book Migration Question / Checkbox -->
+                <div style="background: rgba(59,130,246,0.06); border: 1.5px solid rgba(59,130,246,0.25); border-radius: var(--radius-md); padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+                    <label style="display: flex; align-items: flex-start; gap: 0.75rem; cursor: pointer; margin: 0;">
+                        <input type="checkbox" id="move-copy-include-books" checked class="custom-checkbox" style="margin-top: 3px;">
+                        <div>
+                            <div style="font-weight: 700; font-size: 0.88rem; color: var(--brand-primary);" id="move-copy-books-label">
+                                📚 Also transfer / copy the stored books from this storage
+                            </div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 3px; line-height: 1.4;" id="move-copy-books-desc">
+                                • <strong>Checked:</strong> Active stored book volumes and catalog location pointers are migrated to the new destination.<br>
+                                • <strong>Unchecked:</strong> The storage unit is transferred/copied empty (0 books), leaving existing books where they are.
+                            </div>
+                        </div>
+                    </label>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <button type="button" class="btn btn-outline close-move-copy-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-move-copy">
+                        <i data-lucide="arrow-right-left" style="width: 15px;"></i> Apply Transfer
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRINTABLE STORAGE & SHELF ALLOCATION PDF REPORT -->
+    <div id="modal-storage-pdf-preview" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 820px; text-align: left; background: white; color: #1e293b; padding: 2rem;">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: #0f172a;">Library Physical Storage & Capacity Audit Sheet</h3>
+                    <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Official Facility Layout & Shelf Matrix</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" onclick="window.print()"><i data-lucide="printer" style="width: 14px;"></i> Print / Save PDF</button>
+                    <button class="btn btn-outline btn-sm close-pdf-modal"><i data-lucide="x" style="width: 14px;"></i> Close</button>
+                </div>
+            </div>
+
+            <!-- Printable Sheet Layout -->
+            <div id="storage-printable-sheet">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 900; margin: 0; color: #0f172a;" id="pdf-storage-inst-name">INSTITUTION</h2>
+                        <div style="font-size: 0.85rem; color: #475569;" id="pdf-storage-inst-tagline">Department of Library Infrastructure & Storage Logistics</div>
+                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">Physical Location Map, Shelf Allocation & Capacity Utilization Matrix</div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.8rem; color: #475569;">
+                        <div>Date: <strong id="pdf-storage-report-date"></strong></div>
+                        <div>Facility ID: <span style="font-family: monospace;" id="pdf-storage-inst-code">STR-AUDIT-01</span></div>
+                        <span class="badge badge-success" style="font-size: 0.65rem; background: #dcfce7; color: #15803d; border: 1px solid #86efac;">AUDIT CERTIFIED</span>
+                    </div>
+                </div>
+
+                <!-- Summary Matrix -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL WINGS</span><strong id="pdf-summary-wings" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL SHELVES</span><strong id="pdf-summary-shelves" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL RACKS</span><strong id="pdf-summary-racks" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">UTILIZATION</span><strong id="pdf-summary-util" style="font-size: 1.1rem; color: #0f172a;">0%</strong></div>
+                </div>
+
+                <!-- Shelves Table -->
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.03em;">1. Book Shelves & Subject Allocation Roll</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.8rem;">
+                    <thead>
+                        <tr style="background: #0f172a; color: white;">
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Shelf Code</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Shelf Name</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Location Wing</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Subject Focus</th>
+                            <th style="padding: 0.5rem; text-align: center; border: 1px solid #0f172a;">Tiers</th>
+                            <th style="padding: 0.5rem; text-align: right; border: 1px solid #0f172a;">Capacity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-shelves-table-body">
+                        <!-- Dynamic -->
+                    </tbody>
+                </table>
+
+                <!-- Racks Table -->
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.03em;">2. Multi-Tier Rack Compartments & Stored Volumes</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.8rem;">
+                    <thead>
+                        <tr style="background: #334155; color: white;">
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Rack Code</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Rack Title</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Shelf</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Row / Tier</th>
+                            <th style="padding: 0.5rem; text-align: right; border: 1px solid #334155;">Stored Books</th>
+                            <th style="padding: 0.5rem; text-align: right; border: 1px solid #334155;">Occupancy</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-racks-table-body">
+                        <!-- Dynamic -->
+                    </tbody>
+                </table>
+
+                <!-- Institutional Sign-Off Section -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem;">
+                    <div style="text-align: center; width: 220px;">
+                        <div style="border-bottom: 1px solid #0f172a; height: 35px; margin-bottom: 0.25rem;"></div>
+                        <strong style="color: #0f172a;">Chief Librarian / Storage Manager</strong>
+                        <div style="font-size: 0.7rem; color: #64748b;">Signature & Date</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="width: 65px; height: 65px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #94a3b8; margin: 0 auto 0.25rem auto;">
+                            STORAGE<br>LOGISTICS
+                        </div>
+                    </div>
+                    <div style="text-align: center; width: 220px;">
+                        <div style="border-bottom: 1px solid #0f172a; height: 35px; margin-bottom: 0.25rem;"></div>
+                        <strong style="color: #0f172a;">Campus Infrastructure Director</strong>
+                        <div style="font-size: 0.7rem; color: #64748b;">Official Facility Verification</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shortcuts.js"></script>
+    <script type="module" src="library_storage.js"></script>
+</body>
+</html>

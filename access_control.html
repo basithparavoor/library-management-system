@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Control & RBAC Matrix - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">SECURITY & RBAC</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Role-Based Access Control</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Access Control & Permissions</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Configure granular authorization rules, sub-campus scopes, and module permissions per role.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-primary" id="btn-save-rbac"><i data-lucide="shield-check" style="width: 16px;"></i> Apply Security Matrix</button>
+                    </div>
+                </div>
+
+                <!-- RBAC Stats Row -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: var(--brand-primary);">
+                            <i data-lucide="shield"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Configured Roles</div>
+                            <div class="stat-value" id="kpi-total-roles">8</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--color-success);">
+                            <i data-lucide="lock"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Security Protocol</div>
+                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-success);">ENFORCED</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(139, 92, 246, 0.1); color: var(--brand-accent);">
+                            <i data-lucide="building"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Multi-Campus Scope</div>
+                            <div class="stat-value" style="font-size: 1.1rem; color: var(--brand-primary);">ISOLATED</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--color-warning);">
+                            <i data-lucide="key"></i>
+                        </div>
+                        <div>
+                            <div class="stat-label">Multi-Modal Auth</div>
+                            <div class="stat-value" style="font-size: 1.1rem; color: var(--color-warning);">NFC+QR+PIN</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Privileged Admin Accounts (Under Superadmin) -->
+                <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(59,130,246,0.12); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Privileged Admin Accounts</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Full-access system administrators delegated under primary Super Admin.</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary btn-sm" id="btn-open-create-admin-modal">
+                            <i data-lucide="user-plus" style="width: 14px; height: 14px;"></i> + Create Admin Account
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table id="admin-accounts-table">
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-admins" class="custom-checkbox"></th>
+                                    <th>Admin Name & Title</th>
+                                    <th>Login Email / Identifier</th>
+                                    <th>Role & Authority</th>
+                                    <th>Campus Scope</th>
+                                    <th>Status</th>
+                                    <th>Created Date</th>
+                                    <th style="text-align: right;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-accounts-tbody">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RBAC Matrix Table -->
+                <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                        <div>
+                            <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Institutional RBAC Governance Matrix</h3>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Toggle capabilities for institutional positions. Changes persist instantly.</p>
+                        </div>
+                        <button class="btn btn-outline" id="btn-reset-rbac" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;">
+                            <i data-lucide="rotate-ccw" style="width: 14px;"></i> Reset Defaults
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="min-height: 380px;">
+                        <table id="rbac-table">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 180px;">Institutional Role</th>
+                                    <th>All Campuses</th>
+                                    <th>Book Catalog</th>
+                                    <th>Circulation</th>
+                                    <th>Lab Tracker</th>
+                                    <th>Periods & Attendance</th>
+                                    <th>Event Halls</th>
+                                    <th>Approvals</th>
+                                    <th>Reports</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rbac-tbody">
+                                <!-- Injected dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL: CREATE ADMIN ACCOUNT -->
+    <div id="modal-create-admin" class="app-dialog-overlay" style="display: none;">
+        <div class="app-dialog modal-responsive" style="max-width: 520px; width: 94vw; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                        <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Create Privileged Admin</h3>
+                        <p style="font-size: 0.72rem; color: var(--text-secondary); margin: 0;">Delegate full administrative authority under Super Admin</p>
+                    </div>
+                </div>
+                <button class="btn btn-ghost btn-icon" id="btn-close-create-admin"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <form id="form-create-admin">
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Administrator Full Name *</label>
+                    <input type="text" id="new-admin-name" placeholder="e.g. Dr. K. Ramanathan" required style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Admin Login Email *</label>
+                    <input type="email" id="new-admin-email" placeholder="e.g. ramanathan.admin@tgi.edu" required style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <div class="input-group" style="margin-bottom: 0.85rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Admin Login Password *</label>
+                    <input type="password" id="new-admin-password" placeholder="Set temporary or permanent password (min 6 chars)" required minlength="6" style="width: 100%; padding: 0.65rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                </div>
+
+                <div class="modal-form-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-bottom: 0.85rem;">
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Administrative Role</label>
+                        <select id="new-admin-role" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
+                            <option value="SYSTEM_ADMIN">🛡️ System Administrator (Access All)</option>
+                            <option value="INSTITUTION_HEAD">👑 Institution Head / Chancellor</option>
+                            <option value="CAMPUS_HEAD">🏛️ Multi-Campus Dean</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Designation / Title</label>
+                        <input type="text" id="new-admin-designation" placeholder="e.g. Associate System Admin" value="System Administrator" style="width: 100%; padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-family: inherit;">
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-bottom: 1.25rem;">
+                    <label style="font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem; display: block;">Campus Scope Authority</label>
+                    <select id="new-admin-campus" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%; font-family: inherit;">
+                        <option value="ALL">🌐 Universal Multi-Campus Authority (All Branches)</option>
+                    </select>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-create-admin">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-new-admin"><i data-lucide="shield-plus" style="width: 15px;"></i> Create & Authorize Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="access_control.js"></script>
+</body>
+</html>

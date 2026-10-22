@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFC Smart Card & ID Card Studio - TGI ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        .nfc-studio-tabs {
+            display: flex;
+            gap: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1.5rem;
+        }
+
+        .nfc-tab-btn {
+            background: transparent;
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all var(--transition-fast);
+        }
+
+        .nfc-tab-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .nfc-tab-btn.active {
+            color: var(--brand-primary);
+            border-bottom-color: var(--brand-primary);
+        }
+
+        /* ID Card Preview Geometry */
+        .id-card-viewport {
+            perspective: 1000px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1.5rem;
+            background: var(--bg-muted);
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--border-color);
+            min-height: 380px;
+        }
+
+        .id-card-cr80 {
+            width: 340px;
+            height: 215px;
+            border-radius: 12px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.12), 0 10px 10px rgba(0,0,0,0.08);
+            position: relative;
+            overflow: hidden;
+            background: #ffffff;
+            color: #1e293b;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(0,0,0,0.08);
+            user-select: none;
+            transition: transform 0.3s ease;
+        }
+
+        .id-card-cr80.portrait {
+            width: 220px;
+            height: 340px;
+        }
+
+        .id-card-cr80.event-badge {
+            width: 260px;
+            height: 380px;
+        }
+
+        .nfc-chip-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            background: rgba(255,255,255,0.85);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 6px;
+            padding: 2px 6px;
+            font-size: 0.55rem;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .designer-control-group {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .designer-control-title {
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .nfc-radar-pulse {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(59, 130, 246, 0.15);
+            border: 2px solid var(--brand-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulseRadar 2s infinite ease-in-out;
+            margin: 0 auto 1rem auto;
+            color: var(--brand-primary);
+        }
+
+        @keyframes pulseRadar {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.5); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 16px rgba(59, 130, 246, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+
+        /* Batch Card Print Grid */
+        .batch-print-sheet {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #printable-cards-container, #printable-cards-container * { visibility: visible; }
+            #printable-cards-container {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(2, 85.6mm);
+                gap: 10mm;
+                padding: 10mm;
+            }
+            .id-card-cr80 {
+                box-shadow: none !important;
+                border: 1px solid #ccc !important;
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Container -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">HARDWARE & SMART CARDS</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Contactless NFC & Barcode Sync</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">NFC Smart Card & ID Card Studio</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage NFC tag provisioning, hardware cloning, barcode synchronization, custom ID card designing, and high-res vector PDF printing.</p>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-quick-scan-nfc" style="gap: 0.4rem;">
+                            <i data-lucide="radio" style="width: 16px; color: var(--brand-primary);"></i> Scan Hardware NFC
+                        </button>
+                        <button class="btn btn-primary" id="btn-open-designer" style="gap: 0.4rem;">
+                            <i data-lucide="palette" style="width: 16px;"></i> Open ID Card Designer
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Studio Navigation Tabs -->
+                <div class="nfc-studio-tabs">
+                    <button class="nfc-tab-btn active" data-tab="tab-nfc-hub">
+                        <i data-lucide="cpu" style="width: 16px;"></i> NFC Tag Provisioning & Barcode Linker
+                    </button>
+                    <button class="nfc-tab-btn" data-tab="tab-id-generator">
+                        <i data-lucide="id-card" style="width: 16px;"></i> Batch ID Cards & High-Res PDF Print
+                    </button>
+                    <button class="nfc-tab-btn" data-tab="tab-template-designer">
+                        <i data-lucide="layout-template" style="width: 16px;"></i> Custom Template & Geometry Designer
+                    </button>
+                    <button class="nfc-tab-btn" data-tab="tab-nfc-registry">
+                        <i data-lucide="database" style="width: 16px;"></i> Provisioned Tags Registry (<span id="count-nfc-tags">0</span>)
+                    </button>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- TAB 1: NFC TAG PROVISIONING & BARCODE LINKER                   -->
+                <!-- ============================================================== -->
+                <div id="tab-nfc-hub" class="tab-panel-section">
+                    <div class="grid-layout grid-2" style="grid-template-columns: 1.2fr 0.8fr; gap: 1.5rem;">
+                        
+                        <!-- Left: NFC Terminal & Read/Write Console -->
+                        <div class="card card-glass" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                                <div>
+                                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Smart NFC Tag Reader / Programmer</h3>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Program blank tags, read existing smart cards, or copy UID payloads.</p>
+                                </div>
+                                <span class="badge badge-success" id="nfc-hardware-status">
+                                    <span class="badge-dot"></span> Web NFC Ready
+                                </span>
+                            </div>
+
+                            <!-- Interactive Radar Scan Area -->
+                            <div style="text-align: center; padding: 1.5rem 1rem; background: var(--bg-muted); border-radius: var(--radius-md); border: 1px dashed var(--border-color);">
+                                <div class="nfc-radar-pulse" id="nfc-radar-icon">
+                                    <i data-lucide="nfc" style="width: 36px; height: 36px;"></i>
+                                </div>
+                                <h4 style="font-size: 1rem; font-weight: 700; margin-bottom: 0.25rem;" id="nfc-scan-prompt">Tap Contactless Card on Reader</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Position NFC Card/Tag near device reader antenna or use the emulator below.</p>
+                                
+                                <div style="display: flex; justify-content: center; gap: 0.75rem; flex-wrap: wrap;">
+                                    <button class="btn btn-primary btn-sm" id="btn-start-hardware-nfc">
+                                        <i data-lucide="radio" style="width: 14px;"></i> Listen Hardware Tap
+                                    </button>
+                                    <button class="btn btn-outline btn-sm" id="btn-simulate-nfc-tap">
+                                        <i data-lucide="zap" style="width: 14px; color: var(--color-warning);"></i> Simulate NFC Card Tap
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tag Identification Details -->
+                            <div class="grid-layout grid-2" style="gap: 1rem;">
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">NFC Tag UID / Serial Number</label>
+                                    <div style="display: flex; gap: 0.4rem;">
+                                        <input type="text" id="nfc-input-uid" class="form-control" placeholder="e.g. 04:A2:3B:5C:89:E1" style="font-family: var(--font-mono); font-weight: 700; font-size: 0.85rem;">
+                                        <button class="btn btn-outline btn-icon" id="btn-gen-random-uid" title="Generate Valid Random UID">
+                                            <i data-lucide="refresh-cw" style="width: 14px;"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Tag Technology Type</label>
+                                    <select id="nfc-input-tech" class="form-control">
+                                        <option value="NTAG215">NTAG215 (504 Bytes NDEF)</option>
+                                        <option value="NTAG213">NTAG213 (144 Bytes NDEF)</option>
+                                        <option value="NTAG216">NTAG216 (888 Bytes High-Cap)</option>
+                                        <option value="MIFARE_CLASSIC">Mifare Classic 1K (ISO 14443A)</option>
+                                        <option value="MIFARE_DESFIRE">Mifare DESFire EV2 (High Security)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Bi-directional Barcode & Member Linking -->
+                            <div style="background: rgba(59, 130, 246, 0.04); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: var(--radius-md); padding: 1rem;">
+                                <div style="font-size: 0.8rem; font-weight: 800; color: var(--brand-primary); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i data-lucide="link" style="width: 15px;"></i> Bi-directional Barcode & Member Linker
+                                </div>
+                                <div class="grid-layout grid-2" style="gap: 1rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Linked Member / Staff</label>
+                                        <select id="nfc-link-member-select" class="form-control">
+                                            <option value="">-- Select Member or Staff --</option>
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Synced Code128 Barcode</label>
+                                        <input type="text" id="nfc-link-barcode" class="form-control" placeholder="Barcode (Auto-synced with Member ID)" style="font-family: var(--font-mono); font-weight: 700;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Access Clearances & Roles -->
+                            <div>
+                                <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Authorized Facility Clearance</label>
+                                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; cursor: pointer;">
+                                        <input type="checkbox" id="nfc-perm-turnstile" checked> Turnstile Gate Entrance
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; cursor: pointer;">
+                                        <input type="checkbox" id="nfc-perm-library" checked> Library Circulation Desk
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; cursor: pointer;">
+                                        <input type="checkbox" id="nfc-perm-lab" checked> Digital Research Lab & PCs
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; cursor: pointer;">
+                                        <input type="checkbox" id="nfc-perm-events"> Auditorium & Events
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                                <button class="btn btn-outline" id="btn-copy-nfc-tag" style="gap: 0.35rem;">
+                                    <i data-lucide="copy" style="width: 14px;"></i> Clone / Copy Payload
+                                </button>
+                                <button class="btn btn-primary" id="btn-save-nfc-tag" style="gap: 0.35rem;">
+                                    <i data-lucide="save" style="width: 14px;"></i> Program & Register Tag
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Live Tag Diagnostics & Card Preview -->
+                        <div class="card card-glass" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                            <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Active Tag Diagnostics</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Real-time decoding and security status of scanned badge.</p>
+                            </div>
+
+                            <!-- Live Card Mini Visualizer -->
+                            <div style="display: flex; justify-content: center; align-items: center; padding: 1rem; background: var(--bg-muted); border-radius: var(--radius-md);">
+                                <div class="id-card-cr80" id="live-tag-mini-card" style="width: 280px; height: 175px; transform: scale(0.95); transform-origin: center;">
+                                    <!-- Dynamic Front Render -->
+                                    <div style="height: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; color: white;">
+                                        <div style="font-size: 0.65rem; font-weight: 900; letter-spacing: 0.05em;" id="mini-card-inst-name">INSTITUTION</div>
+                                        <div class="nfc-chip-badge" style="background: rgba(255,255,255,0.2); color: white; border: none;">
+                                            <i data-lucide="nfc" style="width: 10px; height: 10px;"></i> NFC PASS
+                                        </div>
+                                    </div>
+                                    <div style="padding: 8px 12px; display: flex; gap: 10px; align-items: center; flex: 1;">
+                                        <div id="mini-card-photo" style="width: 50px; height: 58px; background: #e2e8f0; border-radius: 6px; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #cbd5e1; flex-shrink: 0;">
+                                            <i data-lucide="user" style="width: 24px; color: #94a3b8;"></i>
+                                        </div>
+                                        <div style="min-width: 0; flex: 1;">
+                                            <div style="font-weight: 800; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="mini-card-name">Select Member</div>
+                                            <div style="font-size: 0.65rem; color: #64748b; font-weight: 600;" id="mini-card-role">Student / Staff</div>
+                                            <div style="font-size: 0.65rem; font-family: var(--font-mono); font-weight: 700; color: #3b82f6;" id="mini-card-id">ID: ---</div>
+                                        </div>
+                                    </div>
+                                    <div style="padding: 4px 12px 8px 12px; display: flex; justify-content: space-between; align-items: flex-end; border-top: 1px solid #f1f5f9;">
+                                        <svg id="mini-card-barcode" style="height: 28px; max-width: 150px;"></svg>
+                                        <div style="font-size: 0.55rem; color: #94a3b8; font-weight: 700; text-align: right;">
+                                            AUTH SIGN<br><span style="font-family: 'Brush Script MT', cursive; font-size: 0.8rem; color: #1e293b;">Dean Auth</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Diagnostic Audit Readout -->
+                            <div style="font-size: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span style="color: var(--text-muted);">Card Status</span>
+                                    <span class="badge badge-success" id="diag-status">VALID & ACTIVE</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span style="color: var(--text-muted);">Tag Serial (UID)</span>
+                                    <span style="font-family: var(--font-mono); font-weight: 700;" id="diag-uid">None Scanned</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span style="color: var(--text-muted);">Synced Barcode</span>
+                                    <span style="font-family: var(--font-mono); font-weight: 700;" id="diag-barcode">---</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0; border-bottom: 1px solid var(--border-color);">
+                                    <span style="color: var(--text-muted);">Access Level</span>
+                                    <span style="font-weight: 700; color: var(--brand-primary);" id="diag-access">All Facilities Granted</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; padding: 0.4rem 0;">
+                                    <span style="color: var(--text-muted);">Last Verification</span>
+                                    <span style="font-weight: 600;" id="diag-timestamp">Ready</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- TAB 2: BATCH ID CARDS & HIGH-RES PDF PRINT                    -->
+                <!-- ============================================================== -->
+                <div id="tab-id-generator" class="tab-panel-section" style="display: none;">
+                    <div class="card card-glass" style="margin-bottom: 1.5rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Filter Member Role</label>
+                                    <select id="batch-filter-role" class="form-control" style="min-width: 140px;">
+                                        <option value="ALL">All Patrons & Staff</option>
+                                        <option value="STUDENT">Students Only</option>
+                                        <option value="STAFF">Faculty & Staff</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Template Style</label>
+                                    <select id="batch-template-select" class="form-control" style="min-width: 180px;">
+                                        <!-- Populated from templates -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Card View</label>
+                                    <select id="batch-card-side" class="form-control" style="min-width: 120px;">
+                                        <option value="FRONT">Front Side</option>
+                                        <option value="BACK">Back Side</option>
+                                        <option value="BOTH">Both Sides</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+                                <button class="btn btn-outline" id="btn-print-browser" style="gap: 0.4rem;">
+                                    <i data-lucide="printer" style="width: 16px;"></i> Print via Browser
+                                </button>
+                                <button class="btn btn-primary" id="btn-export-highres-pdf" style="gap: 0.4rem;">
+                                    <i data-lucide="file-down" style="width: 16px;"></i> Download High-Res Vector PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Printable Cards Grid Container -->
+                    <div id="printable-cards-container" class="batch-print-sheet">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- TAB 3: CUSTOM TEMPLATE & GEOMETRY DESIGNER                    -->
+                <!-- ============================================================== -->
+                <div id="tab-template-designer" class="tab-panel-section" style="display: none;">
+                    <div style="display: grid; grid-template-columns: 360px 1fr; gap: 1.5rem; align-items: flex-start;">
+                        
+                        <!-- Left: Template Controls & Geometry -->
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            
+                            <!-- Preset & Geometry -->
+                            <div class="designer-control-group">
+                                <div class="designer-control-title"><i data-lucide="maximize" style="width: 14px;"></i> Card Geometry & Sizing</div>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Size Preset</label>
+                                        <select id="designer-size-preset" class="form-control">
+                                            <option value="cr80-landscape">Standard CR80 Landscape (85.6 × 53.98 mm)</option>
+                                            <option value="cr80-portrait">Standard CR80 Portrait (53.98 × 85.6 mm)</option>
+                                            <option value="event-badge">Large Event Badge (100 × 140 mm)</option>
+                                            <option value="custom">Custom Dimension (mm / px)</option>
+                                        </select>
+                                    </div>
+                                    <div class="grid-layout grid-2" id="designer-custom-dims" style="display: none; gap: 0.5rem;">
+                                        <div>
+                                            <label class="form-label" style="font-size: 0.7rem;">Width (mm)</label>
+                                            <input type="number" id="designer-width-mm" class="form-control" value="85.6" step="0.1">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" style="font-size: 0.7rem;">Height (mm)</label>
+                                            <input type="number" id="designer-height-mm" class="form-control" value="53.98" step="0.1">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Color Themes & Background -->
+                            <div class="designer-control-group">
+                                <div class="designer-control-title"><i data-lucide="palette" style="width: 14px;"></i> Colors & Background Theme</div>
+                                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                                        <div>
+                                            <label class="form-label" style="font-size: 0.7rem;">Primary Brand Color</label>
+                                            <input type="color" id="designer-color-primary" value="#3b82f6" class="form-control" style="height: 38px; padding: 2px; cursor: pointer;">
+                                        </div>
+                                        <div>
+                                            <label class="form-label" style="font-size: 0.7rem;">Header / Accent</label>
+                                            <input type="color" id="designer-color-accent" value="#1e3a8a" class="form-control" style="height: 38px; padding: 2px; cursor: pointer;">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="form-label" style="font-size: 0.75rem;">Card Texture / Style</label>
+                                        <select id="designer-bg-style" class="form-control">
+                                            <option value="header-gradient">Top Header Gradient + White Base</option>
+                                            <option value="clean-minimal">Clean Pure Minimal White</option>
+                                            <option value="deep-executive">Deep Executive Navy Gradient</option>
+                                            <option value="subtle-mesh">Subtle Holographic Tech Mesh</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visible Elements Toggle -->
+                            <div class="designer-control-group">
+                                <div class="designer-control-title"><i data-lucide="layers" style="width: 14px;"></i> Visible Card Elements</div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.8rem;">
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-logo" checked> Institution Logo & Title
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-photo" checked> Member Portrait Photo
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-barcode" checked> Dynamic Code128 Barcode
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-qrcode" checked> Verification QR Code
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-nfc" checked> NFC Contactless Chip Emblem
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-blood" checked> Blood Group & Emergency Contact
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                        <input type="checkbox" id="designer-elem-signature" checked> Authorized Dean Signature Block
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Save Template Action -->
+                            <div>
+                                <button class="btn btn-primary" id="btn-save-custom-template" style="width: 100%; gap: 0.4rem; padding: 0.75rem;">
+                                    <i data-lucide="check" style="width: 16px;"></i> Save Custom Template
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Interactive Live Canvas Preview -->
+                        <div class="card card-glass" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+                                <div>
+                                    <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Interactive Template Canvas</h3>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Real-time 300 DPI print preview with dynamic binding.</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button class="btn btn-outline btn-sm" id="btn-flip-canvas-side" style="gap: 0.3rem;">
+                                        <i data-lucide="rotate-3d" style="width: 14px;"></i> Flip Front / Back
+                                    </button>
+                                    <button class="btn btn-primary btn-sm" id="btn-download-single-pdf" style="gap: 0.3rem;">
+                                        <i data-lucide="download" style="width: 14px;"></i> Download Card PDF
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Viewport Canvas -->
+                            <div class="id-card-viewport" style="min-height: 380px;">
+                                <!-- FRONT VIEW -->
+                                <div class="id-card-cr80" id="designer-card-preview-front">
+                                    <!-- Dynamic header banner -->
+                                    <div id="preview-header-banner" style="height: 42px; background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: white; padding: 6px 14px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <div id="preview-inst-logo" style="width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;">
+                                                <i data-lucide="building-2" style="width: 18px; height: 18px; color: white;"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-size: 0.75rem; font-weight: 900; letter-spacing: 0.04em;" id="preview-inst-title">INSTITUTION NAME</div>
+                                                <div style="font-size: 0.5rem; opacity: 0.9; text-transform: uppercase;" id="preview-inst-tag">Institutional ID & Smart Pass</div>
+                                            </div>
+                                        </div>
+                                        <div class="nfc-chip-badge" id="preview-nfc-badge" style="background: rgba(255,255,255,0.25); color: white; border: none; font-size: 0.55rem; padding: 2px 6px;">
+                                            <i data-lucide="nfc" style="width: 11px; height: 11px;"></i> NFC
+                                        </div>
+                                    </div>
+
+                                    <!-- Main body -->
+                                    <div style="padding: 10px 14px; display: flex; gap: 12px; align-items: center; flex: 1; min-height: 0;">
+                                        <div id="preview-photo-container" style="width: 56px; height: 66px; background: #f1f5f9; border-radius: 6px; border: 1.5px solid #e2e8f0; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                                            <i data-lucide="user" style="width: 32px; height: 32px; color: #94a3b8;"></i>
+                                        </div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-weight: 900; font-size: 0.92rem; color: #0f172a; line-height: 1.2;" id="preview-member-name">Cardholder Name</div>
+                                            <div style="font-size: 0.7rem; font-weight: 700; color: #3b82f6; margin-top: 1px;" id="preview-member-role">Department • Role</div>
+                                            
+                                            <div style="margin-top: 4px; font-size: 0.62rem; color: #475569; display: flex; flex-direction: column; gap: 2px; line-height: 1.2;">
+                                                <div><strong>ID / Roll:</strong> <span style="font-family: var(--font-mono); font-weight: 700;" id="preview-member-id">MEM-0001</span></div>
+                                                <div><strong>Dept / Cohort:</strong> <span id="preview-member-dept">Academic Department</span></div>
+                                                <div id="preview-blood-contact"><strong>Blood:</strong> -- | <strong>Emerg:</strong> --</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Bottom Barcode & Signature Footer -->
+                                    <div style="height: 44px; padding: 4px 14px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; background: #fafafa; flex-shrink: 0;">
+                                        <div id="preview-barcode-container" style="display: flex; align-items: center;">
+                                            <svg id="preview-barcode-svg" style="height: 24px; max-width: 150px; display: block;"></svg>
+                                        </div>
+                                        <div style="text-align: right; line-height: 1;" id="preview-sig-container">
+                                            <div style="font-family: 'Brush Script MT', cursive, sans-serif; font-size: 0.95rem; color: #1e3a8a; line-height: 1;">Authorized Signatory</div>
+                                            <div style="font-size: 0.48rem; color: #94a3b8; font-weight: 800; text-transform: uppercase; margin-top: 1px;">Dean Office</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- BACK VIEW -->
+                                <div class="id-card-cr80" id="designer-card-preview-back" style="display: none; padding: 14px 16px; justify-content: space-between;">
+                                    <div>
+                                        <div style="font-size: 0.7rem; font-weight: 800; color: var(--brand-primary); text-transform: uppercase; margin-bottom: 6px;">
+                                            TERMS OF USAGE & GOVERNANCE
+                                        </div>
+                                        <p style="font-size: 0.58rem; color: #475569; line-height: 1.4; margin: 0;">
+                                            1. This official smart card is non-transferable and remains the property of the issuing institution.<br>
+                                            2. Contactless NFC and barcode enable automated attendance, digital research workstation unlocking, and book borrowing.<br>
+                                            3. If found, please return immediately to the Campus Dean Office or Library Desk.
+                                        </p>
+                                    </div>
+
+                                    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 8px;">
+                                        <div style="font-size: 0.55rem; color: #64748b;">
+                                            <strong>Emergency Hotline:</strong> General Helpdesk<br>
+                                            <strong>Verification Portal:</strong> Scan QR code
+                                        </div>
+                                        <div id="preview-back-qrcode" style="width: 44px; height: 44px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- ============================================================== -->
+                <!-- TAB 4: PROVISIONED TAGS REGISTRY                              -->
+                <!-- ============================================================== -->
+                <div id="tab-nfc-registry" class="tab-panel-section" style="display: none;">
+                    <div class="card card-glass" style="padding: 0; overflow: hidden;">
+                        <div style="padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Active NFC Smart Card Registry</h3>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Provisioned contactless tags, synced barcodes, and access authorization statuses.</p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="registry-search-input" class="form-control" placeholder="Search by UID, Barcode, Member..." style="width: 260px; font-size: 0.85rem;">
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table" id="nfc-registry-table">
+                                <thead>
+                                    <tr>
+                                        <th>Tag Serial (UID)</th>
+                                        <th>Linked Member</th>
+                                        <th>Role</th>
+                                        <th>Synced Barcode</th>
+                                        <th>Tech Type</th>
+                                        <th>Access Clearances</th>
+                                        <th>Status</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="nfc-registry-tbody">
+                                    <!-- Injected dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+    </div>
+
+    <!-- Edit NFC Modal -->
+    <div id="modal-edit-nfc-tag" class="app-dialog-overlay" style="display: none;">
+        <div class="app-dialog modal-responsive" style="max-width: 520px; width: 94vw; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Edit Provisioned NFC Tag</h3>
+                <button class="btn btn-ghost btn-icon" id="btn-close-edit-nfc"><i data-lucide="x" style="width: 16px;"></i></button>
+            </div>
+            <input type="hidden" id="edit-nfc-id">
+            <div style="display: flex; flex-direction: column; gap: 0.9rem;">
+                <div>
+                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Tag Serial UID</label>
+                    <input type="text" id="edit-nfc-uid" class="form-control" style="font-family: var(--font-mono); font-weight: 700;">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Tag Status</label>
+                    <select id="edit-nfc-status" class="form-control">
+                        <option value="ACTIVE">ACTIVE (Authorized)</option>
+                        <option value="SUSPENDED">SUSPENDED (Temporary Lock)</option>
+                        <option value="LOST_LOCKED">LOST / STOLEN (Revoke Entry)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.75rem; font-weight: 700;">Synced Barcode</label>
+                    <input type="text" id="edit-nfc-barcode" class="form-control" style="font-family: var(--font-mono);">
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                <button class="btn btn-outline" id="btn-cancel-edit-nfc">Cancel</button>
+                <button class="btn btn-primary" id="btn-save-edit-nfc">Update Tag</button>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="nfc_id_cards.js"></script>
+</body>
+</html>

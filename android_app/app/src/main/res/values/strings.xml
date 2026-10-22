@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">TGI LIBRARY</string>
+    <string name="app_tagline">Smart Campus &amp; Library Management System</string>
+    <string name="default_server_url">https://tgi-library.vercel.app</string>
+    <string name="nfc_scanned_toast">NFC Smartcard Detected: %1$s</string>
+    <string name="camera_permission_required">Camera access is required for barcode and QR code scanning.</string>
+    <string name="storage_permission_required">Storage access is required for downloading ID cards and PDF reports.</string>
+</resources>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student & Patron Portal - Library & Campus ERP</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <div style="min-height: 100vh; display: flex; flex-direction: column; background: var(--bg-primary);">
+        
+        <!-- OPAC Top Header -->
+        <header style="background: var(--bg-glass-strong); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid var(--border-color); padding: 0.85rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 80;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div id="portal-brand-logo" style="background: var(--brand-gradient); color: white; width: 36px; height: 36px; min-width: 36px; max-width: 36px; min-height: 36px; max-height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-brand); overflow: hidden; flex-shrink: 0;">
+                    <i data-lucide="graduation-cap" style="width: 20px; height: 20px;"></i>
+                </div>
+                <div>
+                    <h2 style="font-size: 1.15rem; font-weight: 800; color: var(--text-primary); margin: 0; letter-spacing: -0.02em;" id="portal-brand-header">PATRON PORTAL</h2>
+                    <p style="font-size: 0.65rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin: 0;" id="portal-brand-tagline">Multi-Campus OPAC, Smartcard & Lab Kiosk</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 0.65rem;">
+                <!-- Notification Bell -->
+                <button id="btn-notifications-topbar" class="btn btn-ghost btn-icon" title="Notifications" style="border-radius: 50%; width: 34px; height: 34px; position: relative;">
+                    <i data-lucide="bell" style="width: 16px; height: 16px;"></i>
+                    <span id="topbar-notif-badge" style="position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-danger); display: block;"></span>
+                </button>
+
+                <!-- Admin Messenger Desk -->
+                <button id="btn-messenger-topbar" class="btn btn-ghost btn-icon" title="Chat with Admin" style="border-radius: 50%; width: 34px; height: 34px; position: relative; color: var(--brand-primary);">
+                    <i data-lucide="message-square" style="width: 16px; height: 16px;"></i>
+                    <span id="topbar-chat-badge" style="position: absolute; top: 3px; right: 3px; width: 8px; height: 8px; border-radius: 50%; background: var(--color-success); display: block;"></span>
+                </button>
+
+                <!-- Theme Toggle -->
+                <button id="theme-toggle-student" class="btn btn-ghost btn-icon" title="Toggle Theme" style="border-radius: 50%;">
+                    <i data-lucide="moon" style="width: 18px; height: 18px;"></i>
+                </button>
+                <div style="width: 1px; height: 20px; background: var(--border-color);"></div>
+                <a href="login.html" class="btn btn-outline btn-sm"><i data-lucide="shield" style="width: 14px;"></i> Staff ERP</a>
+            </div>
+        </header>
+
+        <!-- Main Portal Container -->
+        <main style="flex: 1; max-width: 1280px; margin: 0 auto; width: 100%; padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem;">
+            
+            <!-- Student Smartcard Banner & Multi-modal Login Bar -->
+            <div class="card card-glass" style="background: linear-gradient(135deg, rgba(37,99,235,0.12) 0%, rgba(139,92,246,0.08) 100%); border-color: rgba(59,130,246,0.25); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                        <span class="badge badge-brand" style="font-size: 0.68rem;">SMART CREDENTIAL</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">NFC / Barcode Enabled</span>
+                    </div>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.25rem;" id="patron-display-name">Welcome, Patron</h2>
+                    <p style="color: var(--text-secondary); font-size: 0.88rem; margin: 0;">ID: <strong style="font-family: var(--font-mono); color: var(--brand-primary);" id="patron-display-id">GUEST-001</strong> • Academic Library Portal</p>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                    <button class="btn btn-outline btn-sm" id="btn-show-smartcard"><i data-lucide="credit-card" style="width: 15px;"></i> View Digital ID Card</button>
+                    <button class="btn btn-primary btn-sm" id="btn-switch-patron"><i data-lucide="repeat" style="width: 15px;"></i> Switch Account (NFC / QR)</button>
+                </div>
+            </div>
+
+            <!-- OPAC Hero Search Bar -->
+            <div class="card card-glass" style="padding: 1.25rem 1.5rem;">
+                <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+                    <div style="position: relative; flex: 1; min-width: 280px;">
+                        <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.85rem; color: var(--brand-primary); width: 18px; height: 18px;"></i>
+                        <input type="text" id="opac-search" placeholder="Search catalog by title, author, subject, or ISBN..." style="padding: 0.75rem 1rem 0.75rem 2.75rem; font-size: 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select id="opac-category-filter" style="padding: 0.65rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); font-size: 0.9rem;">
+                            <option value="ALL">All Categories</option>
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Software Engineering">Software Engineering</option>
+                            <option value="Artificial Intelligence">Artificial Intelligence</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Layout: Catalog & Facility Availability -->
+            <div class="responsive-grid-2">
+                <!-- Left Column: Catalog Results -->
+                <div style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Institutional Book Catalog</h3>
+                        <span id="opac-results-count" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Loading collection...</span>
+                    </div>
+
+                    <div id="opac-results-container" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                        <!-- Injected dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Student Dashboard & Lab Status -->
+                <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+                    
+                    <!-- Live Computer Lab Status Board -->
+                    <div class="card card-glass">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(16, 185, 129, 0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="monitor" style="width: 16px;"></i>
+                                </div>
+                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">Computer Lab Workstations</h3>
+                            </div>
+                            <span class="badge badge-success" style="font-size: 0.65rem;"><span class="badge-dot"></span> LIVE</span>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Check available terminals before heading to the lab.</p>
+
+                        <div id="student-lab-status-list" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- My Active Loans Widget -->
+                    <div class="card card-glass">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem;">
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center;">
+                                <i data-lucide="book-marked" style="width: 16px;"></i>
+                            </div>
+                            <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">My Active Borrowings</h3>
+                        </div>
+                        <div id="student-active-loans" style="font-size: 0.85rem;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Registered Event Passes -->
+                    <div class="card card-glass">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(139, 92, 246, 0.1); color: var(--brand-accent); display: flex; align-items: center; justify-content: center;">
+                                    <i data-lucide="ticket" style="width: 16px;"></i>
+                                </div>
+                                <h3 style="font-size: 1rem; font-weight: 700; margin: 0;">My Event Passes</h3>
+                            </div>
+                        </div>
+                        <div id="student-event-passes" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.85rem;">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL: Student Digital ID Smartcard -->
+    <div id="modal-smartcard" class="modal-backdrop" style="display: none;">
+        <div class="modal card card-glass" style="max-width: 440px; width: 95%; padding: 1.5rem;">
+            <div class="modal-header" style="margin-bottom: 1rem;">
+                <h3 class="modal-title">Digital Student Credential</h3>
+                <button class="modal-close" id="btn-close-smartcard">&times;</button>
+            </div>
+            
+            <div id="digital-card-container" style="background: linear-gradient(135deg, #1e3a8a, #3b82f6); color: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 25px rgba(30, 58, 138, 0.4); display: flex; flex-direction: column; justify-content: space-between; min-height: 240px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <div style="font-size: 0.7rem; font-weight: 800; letter-spacing: 0.08em; opacity: 0.85;" id="sc-inst-name">INSTITUTION</div>
+                        <div style="font-size: 0.95rem; font-weight: 700;">STUDENT SMARTCARD</div>
+                    </div>
+                    <div style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 800;">
+                        NFC
+                    </div>
+                </div>
+
+                <div style="margin: 1.25rem 0;">
+                    <div style="font-size: 1.25rem; font-weight: 800;" id="sc-name">Patron Member</div>
+                    <div style="font-family: var(--font-mono); font-size: 0.85rem; opacity: 0.9;" id="sc-id">GUEST-001</div>
+                    <div style="font-size: 0.75rem; opacity: 0.8; margin-top: 0.2rem;">Academic Library Member</div>
+                </div>
+
+                <div style="background: white; border-radius: 8px; padding: 0.5rem; display: flex; justify-content: center;">
+                    <svg id="sc-barcode" style="max-width: 100%; height: 45px;"></svg>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+                <button class="btn btn-primary btn-sm" onclick="window.print()"><i data-lucide="printer" style="width: 14px;"></i> Print Card</button>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="ui.js"></script>
+    <script type="module">
+        import { erp } from './erp_service.js';
+        import { supabase } from './supabaseClient.js';
+        import { showToast, playAudioChime } from './ui.js';
+
+        let currentStudent = {
+            id: 's-1',
+            student_id: 'GUEST-001',
+            name: 'Patron Member',
+            department: 'Academic General',
+            campus: 'Main Library',
+            nfc: 'NFC-GUEST-001'
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const inst = erp.getInstitutionProfile();
+            const brandHdr = document.getElementById('portal-brand-header');
+            if (brandHdr && inst.name) brandHdr.innerText = `${inst.name} PATRON PORTAL`;
+            const scInst = document.getElementById('sc-inst-name');
+            if (scInst && inst.name) scInst.innerText = inst.name;
+
+            loadCatalog();
+            loadLabStatus();
+            loadActiveLoans();
+            loadEventPasses();
+            setupSmartcard();
+        });
+
+        async function loadCatalog() {
+            const resultsContainer = document.getElementById('opac-results-container');
+            const countText = document.getElementById('opac-results-count');
+
+            try {
+                const { data, error } = await supabase
+                    .from('books')
+                    .select(`
+                        id, title, author, isbn, price, edition,
+                        categories(name),
+                        publishers(name),
+                        book_copies(id, status, shelves(name), racks(name))
+                    `)
+                    .order('title');
+
+                const books = data || [];
+                countText.innerText = `${books.length} titles available`;
+
+                if (books.length === 0) {
+                    resultsContainer.innerHTML = `<div class="card card-glass" style="padding: 2rem; text-align: center; color: var(--text-muted);">No books match your criteria.</div>`;
+                    return;
+                }
+
+                resultsContainer.innerHTML = books.map(book => {
+                    const totalCopies = book.book_copies?.length || 0;
+                    const availCopies = book.book_copies?.filter(c => c.status === 'AVAILABLE').length || 0;
+                    const isAvailable = availCopies > 0;
+                    const category = book.categories?.name || 'General';
+
+                    return `
+                        <div class="card card-glass" style="padding: 1.25rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                            <div style="flex: 1; min-width: 240px;">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                                    <span class="badge badge-brand" style="font-size: 0.65rem;">${category}</span>
+                                    ${book.edition ? `<span style="font-size: 0.75rem; color: var(--text-muted);">${book.edition}</span>` : ''}
+                                </div>
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin: 0 0 0.25rem 0;">${book.title}</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Author: <strong>${book.author}</strong></p>
+                                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.35rem;">
+                                    ISBN: <span style="font-family: var(--font-mono);">${book.isbn || 'N/A'}</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; flex-shrink: 0;">
+                                <span class="badge ${isAvailable ? 'badge-success' : 'badge-danger'}" style="font-size: 0.75rem;">
+                                    <span class="badge-dot"></span> ${availCopies} / ${totalCopies} Available
+                                </span>
+                                <button class="btn btn-sm ${isAvailable ? 'btn-outline' : 'btn-primary'}" onclick="window.reserveBook('${book.title.replace(/'/g, "\\'")}')">
+                                    <i data-lucide="bookmark" style="width: 14px;"></i> Reserve
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                if (window.lucide) lucide.createIcons();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        window.reserveBook = function(title) {
+            playAudioChime('SUCCESS');
+            showToast(`Hold placed on "${title}". Collect from Circulation Desk within 24h.`, 'success');
+        };
+
+        function loadLabStatus() {
+            const computers = erp.getComputers('ALL');
+            const container = document.getElementById('student-lab-status-list');
+            if (!container) return;
+            
+            if (!computers || computers.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.82rem;">No lab workstations registered.</div>`;
+                return;
+            }
+
+            container.innerHTML = computers.slice(0, 4).map(c => `
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.6rem 0.85rem; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid var(--border-color);">
+                    <div>
+                        <div style="font-weight: 700; font-size: 0.85rem; font-family: var(--font-mono);">${c.machine_code}</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">${c.lab_name}</div>
+                    </div>
+                    <span class="badge ${c.status === 'AVAILABLE' ? 'badge-success' : (c.status === 'IN_USE' ? 'badge-warning' : 'badge-danger')}" style="font-size: 0.65rem;">
+                        ${c.status === 'AVAILABLE' ? 'FREE TO USE' : c.status}
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        function loadEventPasses() {
+            const events = erp.getEvents('ALL');
+            const container = document.getElementById('student-event-passes');
+            if (!container) return;
+
+            if (!events || events.length === 0) {
+                container.innerHTML = `<div style="text-align: center; padding: 1.5rem; color: var(--text-muted); font-size: 0.82rem;">No upcoming public events scheduled.</div>`;
+                return;
+            }
+
+            container.innerHTML = events.map(e => `
+                <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="font-weight: 700; font-size: 0.85rem; color: var(--text-primary);">${e.title}</div>
+                        <span class="badge badge-brand" style="font-size: 0.65rem;">PASS ISSUED</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">
+                        Venue: <strong>${e.hall_name || 'Auditorium'}</strong> • Host: ${e.conductor_name}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function loadActiveLoans() {
+            const container = document.getElementById('student-active-loans');
+            if (!container) return;
+
+            try {
+                const { data: loans, error } = await supabase
+                    .from('loans')
+                    .select('id, book_id, due_date, status, book_copies(barcode, books(title))')
+                    .eq('status', 'ISSUED')
+                    .limit(5);
+
+                if (!loans || loans.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 1.25rem; color: var(--text-muted); font-size: 0.82rem;">No active borrowings on file.</div>`;
+                    return;
+                }
+
+                container.innerHTML = loans.map(l => {
+                    const title = l.book_copies?.books?.title || 'Library Resource';
+                    const barcode = l.book_copies?.barcode || 'N/A';
+                    const dueStr = l.due_date ? new Date(l.due_date).toLocaleDateString() : 'Active';
+                    return `
+                        <div style="background: var(--bg-card); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 0.5rem;">
+                            <div style="font-weight: 700; color: var(--text-primary);">${title}</div>
+                            <div style="font-size: 0.75rem; color: var(--color-success); margin-top: 0.2rem;">Due: ${dueStr} • Barcode: ${barcode}</div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                container.innerHTML = `<div style="text-align: center; padding: 1.25rem; color: var(--text-muted); font-size: 0.82rem;">No active borrowings on file.</div>`;
+            }
+        }
+
+        function setupSmartcard() {
+            const modal = document.getElementById('modal-smartcard');
+            document.getElementById('btn-show-smartcard')?.addEventListener('click', () => {
+                document.getElementById('sc-name').innerText = currentStudent.name;
+                document.getElementById('sc-id').innerText = currentStudent.student_id;
+                modal.style.display = 'flex';
+
+                if (window.JsBarcode) {
+                    JsBarcode("#sc-barcode", currentStudent.student_id, {
+                        format: "CODE128",
+                        height: 35,
+                        displayValue: false,
+                        margin: 0
+                    });
+                }
+            });
+
+            document.getElementById('btn-close-smartcard')?.addEventListener('click', () => modal.style.display = 'none');
+
+            document.getElementById('btn-switch-patron')?.addEventListener('click', () => {
+                const newId = prompt('Enter Member Register ID or tap NFC card:', 'MEM-1001');
+                if (newId) {
+                    currentStudent.student_id = newId;
+                    currentStudent.name = `Member (${newId})`;
+                    document.getElementById('patron-display-name').innerText = `Welcome, ${currentStudent.name}`;
+                    document.getElementById('patron-display-id').innerText = currentStudent.student_id;
+                    playAudioChime('SUCCESS');
+                    showToast(`Active session switched to ${currentStudent.name}`, 'success');
+                    loadActiveLoans();
+                }
+            });
+        }
+
+        // Theme Toggle
+        document.getElementById('theme-toggle-student')?.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+    </script>
+
+    <!-- Mobile Bottom Navigation for Student Portal -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav" role="navigation" aria-label="Primary navigation">
+        <ul>
+            <li>
+                <a href="#" data-nav="search" class="nav-link" id="mobile-search-btn">
+                    <i data-lucide="search" aria-hidden="true"></i>
+                    <span>Search</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="loans" class="nav-link" id="mobile-loans-btn">
+                    <i data-lucide="book-marked" aria-hidden="true"></i>
+                    <span>My Loans</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="labs" class="nav-link" id="mobile-labs-btn">
+                    <i data-lucide="monitor" aria-hidden="true"></i>
+                    <span>Labs</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="events" class="nav-link" id="mobile-events-btn">
+                    <i data-lucide="ticket" aria-hidden="true"></i>
+                    <span>Events</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" data-nav="profile" class="nav-link" id="mobile-profile-btn">
+                    <i data-lucide="user" aria-hidden="true"></i>
+                    <span>Profile</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <script>
+        // Mobile bottom nav handlers for student portal
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('#mobile-bottom-nav .nav-link');
+            const sections = {
+                search: () => document.getElementById('opac-search')?.focus(),
+                loans: () => {
+                    const loansSection = document.getElementById('student-active-loans');
+                    loansSection?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                },
+                labs: () => {
+                    const labsSection = document.getElementById('student-lab-status-list');
+                    labsSection?.closest('.card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                },
+                events: () => {
+                    const eventsSection = document.getElementById('student-event-passes');
+                    eventsSection?.closest('.card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                },
+                profile: () => document.getElementById('btn-show-smartcard')?.click()
+            };
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                    const action = sections[link.dataset.nav];
+                    if (action) action();
+                });
+            });
+            
+            // Set initial active
+            document.querySelector('#mobile-bottom-nav [data-nav="search"]')?.classList.add('active');
+            
+            if (window.lucide) lucide.createIcons();
+        });
+    </script>
+</body>
+</html>

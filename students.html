@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Directory - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">MEMBERS</span>
+                            <span id="total-members-counter" style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600;">Loading...</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Student Members</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Manage library member records, portal access credentials, and ID cards.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-bulk-import"><i data-lucide="upload" style="width: 16px;"></i> Bulk Import CSV</button>
+                        <button class="btn btn-primary" id="btn-add-student"><i data-lucide="user-plus" style="width: 16px;"></i> Register Member</button>
+                    </div>
+                </div>
+
+                <!-- Main Data Grid Card -->
+                <div class="card card-glass" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+                    <!-- Data Grid Toolbar -->
+                    <div class="data-grid-toolbar">
+                        <div style="display: flex; gap: 0.75rem; flex: 1; min-width: 280px; flex-wrap: wrap;">
+                            <div class="input-group" style="margin: 0; flex: 1; min-width: 220px; position: relative;">
+                                <i data-lucide="search" style="position: absolute; left: 1rem; top: 0.85rem; color: var(--text-muted); width: 16px; height: 16px;"></i>
+                                <input type="text" id="search-students" placeholder="Search by name, Register No, or city..." style="padding-left: 2.75rem;">
+                            </div>
+                            <select id="filter-dept" style="width: auto; min-width: 170px;">
+                                <option value="">All Departments</option>
+                            </select>
+                            <select id="filter-status" style="width: auto; min-width: 140px;">
+                                <option value="">All Statuses</option>
+                                <option value="ACTIVE">Active Members</option>
+                                <option value="INACTIVE">Inactive</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                            <span id="selection-count" class="selected-count" style="display: none;">0 Selected</span>
+                            <button id="btn-batch-delete" class="btn btn-sm btn-danger" style="display: none;"><i data-lucide="trash-2" style="width: 14px;"></i> Delete Selected</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.exportStudents('csv')"><i data-lucide="file-spreadsheet" style="width: 15px;"></i> CSV</button>
+                            <button class="btn btn-outline btn-sm" onclick="window.exportStudents('pdf')"><i data-lucide="printer" style="width: 15px;"></i> Print</button>
+                        </div>
+                    </div>
+
+                    <!-- Data Table -->
+                    <div class="table-responsive" style="flex: 1; min-height: 400px;">
+                        <table id="students-table">
+                            <thead>
+                                <tr>
+                                    <th class="checkbox-cell"><input type="checkbox" id="select-all" class="custom-checkbox"></th>
+                                    <th>Member Profile</th>
+                                    <th>Register No (ID)</th>
+                                    <th>Department & Class</th>
+                                    <th>Account Status</th>
+                                    <th style="text-align: right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="students-table-body">
+                                <tr>
+                                    <td colspan="6" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                                        <i data-lucide="loader-2" class="animate-spin" style="width: 28px; height: 28px; margin-bottom: 0.5rem;"></i>
+                                        <div>Loading member directory...</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Table Footer & Pagination -->
+                    <div class="table-footer">
+                        <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                            <span style="font-size: 0.85rem; color: var(--text-secondary); font-weight: 500;">Rows per page:</span>
+                            <select id="rows-per-page" style="width: 70px; padding: 0.35rem 0.5rem; border-radius: var(--radius-xs);">
+                                <option value="10">10</option>
+                                <option value="25" selected>25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 500;" id="pagination-info">Showing 0-0 of 0</span>
+                        </div>
+                        <div class="pagination-controls">
+                            <button class="btn btn-outline btn-sm" id="btn-prev-page" disabled><i data-lucide="chevron-left" style="width: 16px; height: 16px;"></i> Prev</button>
+                            <span style="font-size: 0.85rem; font-weight: 600; padding: 0 0.5rem;" id="current-page-display">Page 1</span>
+                            <button class="btn btn-outline btn-sm" id="btn-next-page" disabled>Next <i data-lucide="chevron-right" style="width: 16px; height: 16px;"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- REGISTER / EDIT STUDENT MODAL -->
+    <div id="modal-add-student" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 650px; max-height: 90vh; overflow-y: auto; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+                <div>
+                    <h2 id="modal-student-title" style="font-size: 1.35rem; font-weight: 800; margin: 0;">Register New Member</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Create a patron account and auto-generate portal credentials.</p>
+                </div>
+                <button id="btn-close-student-modal" class="btn btn-ghost btn-icon"><i data-lucide="x" style="width: 18px; height: 18px;"></i></button>
+            </div>
+            
+            <form id="form-add-student">
+                <div style="display: flex; gap: 1.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                    <!-- Photo Avatar -->
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 0.5rem; width: 100px;">
+                        <div id="photo-preview" style="width: 84px; height: 84px; border-radius: 50%; border: 2px dashed var(--border-color); display: flex; align-items: center; justify-content: center; background: var(--bg-muted); overflow: hidden;">
+                            <i data-lucide="user" style="width: 32px; height: 32px; color: var(--text-muted);"></i>
+                        </div>
+                        <label class="btn btn-outline btn-sm" style="cursor: pointer; width: 100%; text-align: center; font-size: 0.75rem;">
+                            Photo
+                            <input type="file" id="add-student-photo" accept="image/*" style="display: none;">
+                        </label>
+                    </div>
+
+                    <!-- Core Details -->
+                    <div style="flex: 1; min-width: 220px; display: grid; grid-template-columns: 1fr; gap: 0.85rem;">
+                        <div class="input-group" style="margin: 0;">
+                            <label>Register Number / Student ID *</label>
+                            <input type="text" id="add-student-id" required placeholder="e.g. STU-1001">
+                        </div>
+                        <div class="input-group" style="margin: 0;">
+                            <label>Full Member Name *</label>
+                            <input type="text" id="add-student-name" required placeholder="e.g. Student Full Name">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <div class="input-group">
+                        <label>City / Location</label>
+                        <input type="text" id="add-student-place" placeholder="e.g. City / Location">
+                    </div>
+                    <div class="input-group">
+                        <label>Department *</label>
+                        <select id="add-student-dept" required>
+                            <option value="">Select Department...</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Class / Section *</label>
+                        <select id="add-student-class" required>
+                            <option value="">Select Class...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Portal Access Credentials -->
+                <div style="background: var(--bg-muted); padding: 1.25rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); margin-bottom: 1rem;">
+                    <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                        <i data-lucide="shield-check" style="width: 16px; height: 16px; color: var(--brand-primary);"></i> Patron OPAC Portal Access
+                    </h4>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.75rem;">Username is synced to the Register Number. An initial temporary password is generated.</p>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Portal Username</label>
+                            <input type="text" id="portal-username" readonly disabled style="background: var(--bg-surface); font-family: var(--font-mono); font-size: 0.85rem;">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.25rem; display: block;">Initial Password</label>
+                            <input type="text" id="portal-password" readonly disabled style="background: var(--bg-surface); font-family: var(--font-mono); font-size: 0.85rem;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.75rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                    <button type="button" class="btn btn-outline" id="btn-cancel-student">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-student"><i data-lucide="user-plus" style="width: 16px;"></i> Register Member</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- BULK IMPORT MODAL -->
+    <div id="modal-bulk-import" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 580px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h2 style="font-size: 1.25rem; font-weight: 800; margin: 0;">Bulk Import Members</h2>
+                <button class="btn btn-ghost btn-icon close-bulk"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin-bottom: 1.25rem;">Upload a CSV list of members. Ensure Department and Class match your master settings.</p>
+            
+            <button class="btn btn-outline" id="btn-download-template" style="margin-bottom: 1.5rem; width: 100%; justify-content: center;">
+                <i data-lucide="download" style="width: 16px;"></i> Download CSV Template
+            </button>
+
+            <div class="input-group">
+                <label>Select CSV File</label>
+                <input type="file" id="file-upload-students" accept=".csv" style="padding: 0.6rem 0.8rem; width: 100%;">
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                <button class="btn btn-outline close-bulk">Cancel</button>
+                <button class="btn btn-primary" id="btn-process-bulk"><i data-lucide="upload-cloud" style="width: 16px;"></i> Process Import</button>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="students.js"></script>
+</body>
+</html>

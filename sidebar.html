@@ -1,0 +1,151 @@
+<aside class="sidebar">
+    <!-- Brand Header -->
+    <div class="brand" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; padding: 0.25rem 0.25rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; min-width: 0; flex: 1;">
+            <div id="sidebar-brand-icon" style="width: 40px; height: 40px; min-width: 40px; max-width: 40px; min-height: 40px; max-height: 40px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; border-radius: 8px;">
+                <i data-lucide="building-2" style="width: 24px; height: 24px; color: var(--brand-primary);"></i>
+            </div>
+            <div style="min-width: 0; flex: 1; overflow: hidden;">
+                <h2 style="font-size: 1.05rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebar-inst-brand-name">INSTITUTION ERP</h2>
+                <p style="font-size: 0.65rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" id="sidebar-inst-brand-tagline">ERP & Facility Suite</p>
+            </div>
+        </div>
+        <button id="mobile-sidebar-close-btn" class="btn btn-ghost btn-icon mobile-sidebar-close" style="padding: 0.35rem; color: var(--text-secondary); border-radius: 8px; flex-shrink: 0;" aria-label="Close navigation sidebar" title="Close Sidebar">
+            <i data-lucide="x" style="width: 20px; height: 20px;"></i>
+        </button>
+    </div>
+    
+    <nav id="sidebar-main-nav" style="display: flex; flex-direction: column; gap: 0.2rem; flex: 1; overflow-y: auto; padding-right: 0.25rem;">
+        <!-- Core Operations -->
+        <p style="font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); margin: 0.5rem 0 0.35rem 0.75rem; font-weight: 800; letter-spacing: 0.08em;">1. Core Management</p>
+        
+        <a href="index.html" class="nav-item">
+            <i data-lucide="layout-dashboard"></i> 
+            <span>ERP Dashboard</span>
+        </a>
+        <a href="circulation.html" class="nav-item">
+            <i data-lucide="repeat"></i> 
+            <span>Circulation Desk</span>
+            <span class="badge badge-brand" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">NFC/Bar</span>
+        </a>
+        <a href="nfc_id_cards.html" class="nav-item">
+            <i data-lucide="contact-2"></i> 
+            <span>NFC & ID Card Studio</span>
+            <span class="badge badge-brand" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">NFC/PDF</span>
+        </a>
+        <a href="books.html" class="nav-item">
+            <i data-lucide="book-open"></i> 
+            <span>Book Catalogue</span>
+        </a>
+        <a href="students.html" class="nav-item">
+            <i data-lucide="users"></i> 
+            <span>Student Members</span>
+        </a>
+        <a href="staff.html" class="nav-item">
+            <i data-lucide="user-check"></i> 
+            <span>Faculty & Staff</span>
+        </a>
+        <a href="academic_structure.html" class="nav-item">
+            <i data-lucide="network"></i> 
+            <span>Academic Structure</span>
+            <span class="badge badge-brand" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">Depts</span>
+        </a>
+        <a href="library_storage.html" class="nav-item">
+            <i data-lucide="archive"></i> 
+            <span>Library Storage</span>
+            <span class="badge" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem; background: rgba(139,92,246,0.1); color: var(--brand-accent);">Shelves</span>
+        </a>
+        
+        <!-- Facilities & Smart Lab ERP -->
+        <p style="font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); margin: 1rem 0 0.35rem 0.75rem; font-weight: 800; letter-spacing: 0.08em;">2. Facilities & Laboratories</p>
+        
+        <a href="computers.html" class="nav-item">
+            <i data-lucide="monitor"></i> 
+            <span>Computer Lab Tracker</span>
+            <span class="badge badge-success" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">Live</span>
+        </a>
+        <a href="attendance.html" class="nav-item">
+            <i data-lucide="calendar-check"></i> 
+            <span>Period & Attendance</span>
+        </a>
+        <a href="events.html" class="nav-item">
+            <i data-lucide="ticket"></i> 
+            <span>Event Halls & Audits</span>
+        </a>
+        <a href="workstation_agent.html" class="nav-item">
+            <i data-lucide="lock"></i> 
+            <span>PC Classroom Locker</span>
+            <span class="badge badge-warning" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">Focus</span>
+        </a>
+        <a href="hallpass.html" class="nav-item">
+            <i data-lucide="footprints"></i> 
+            <span>Entrance Hall Passes</span>
+        </a>
+        <a href="audio_station.html" class="nav-item">
+            <i data-lucide="volume-2"></i> 
+            <span>Read-Aloud TTS Station</span>
+        </a>
+        <a href="reading_logs.html" class="nav-item">
+            <i data-lucide="award"></i> 
+            <span>Reading Logs & Sets</span>
+        </a>
+        <a href="inspect.html" class="nav-item">
+            <i data-lucide="microscope"></i> 
+            <span>Universal Inspector</span>
+        </a>
+        <a href="inventory.html" class="nav-item">
+            <i data-lucide="scan-line"></i> 
+            <span>Inventory Audit</span>
+        </a>
+        <a href="shelf_auditor.html" class="nav-item">
+            <i data-lucide="eye"></i> 
+            <span>Shelf Vision Auditor</span>
+            <span class="badge" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem; background: rgba(239,68,68,0.1); color: var(--color-danger);">AI Vision</span>
+        </a>
+        <a href="barcode_printer.html" class="nav-item">
+            <i data-lucide="printer"></i> 
+            <span>Print Labels & Cards</span>
+        </a>
+        <a href="kiosk.html" class="nav-item" target="_blank" style="color: var(--color-success); background: rgba(16, 185, 129, 0.08);">
+            <i data-lucide="tablet"></i> 
+            <span>Self-Service Kiosk</span>
+            <span class="badge badge-success" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">Touch</span>
+        </a>
+        
+        <!-- Executive Governance & Portals -->
+        <p style="font-size: 0.68rem; text-transform: uppercase; color: var(--text-muted); margin: 1rem 0 0.35rem 0.75rem; font-weight: 800; letter-spacing: 0.08em;">3. Executive & Portals</p>
+        
+        <a href="campus_portal.html" class="nav-item">
+            <i data-lucide="shield-check"></i> 
+            <span>Campus Heads Portal</span>
+            <span class="badge badge-warning" style="margin-left: auto; font-size: 0.6rem; padding: 0.1rem 0.4rem;">Dean</span>
+        </a>
+        <a href="reports.html" class="nav-item">
+            <i data-lucide="bar-chart-3"></i> 
+            <span>Dynamic Report Engine</span>
+        </a>
+        <a href="access_control.html" class="nav-item">
+            <i data-lucide="lock"></i> 
+            <span>Access Control (RBAC)</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <i data-lucide="settings"></i> 
+            <span>Settings & Hierarchy</span>
+        </a>
+        <a href="student_portal.html" class="nav-item" target="_blank" style="color: var(--brand-primary); background: rgba(59, 130, 246, 0.06); margin-top: 0.5rem;">
+            <i data-lucide="external-link"></i> 
+            <span>Patron OPAC Portal</span>
+        </a>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div style="padding-top: 1rem; margin-top: auto; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.4rem;">
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>NFC & Barcode</span>
+            <span class="badge badge-success" style="font-size: 0.625rem; padding: 0.15rem 0.45rem;"><span class="badge-dot"></span> Active</span>
+        </div>
+        <div style="font-size: 0.68rem; color: var(--text-muted); text-align: center;">
+            TGI ERP v3.0 • Enterprise Suite
+        </div>
+    </div>
+</aside>

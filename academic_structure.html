@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academic Structure - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        .structure-tab-btn {
+            border-radius: var(--radius-sm);
+            padding: 0.6rem 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            background: transparent;
+            border: 1px solid transparent;
+            transition: all var(--transition-fast);
+            cursor: pointer;
+        }
+        .structure-tab-btn.active {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: rgba(59, 130, 246, 0.3);
+            color: var(--brand-primary);
+        }
+        .structure-tab-btn:hover:not(.active) {
+            background: var(--bg-muted);
+            color: var(--text-primary);
+        }
+
+        .academic-node {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-xs);
+        }
+        .academic-node:hover {
+            border-color: rgba(59, 130, 246, 0.35);
+            box-shadow: var(--shadow-sm);
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            #modal-academic-pdf-preview, #modal-academic-pdf-preview * { visibility: visible; }
+            #modal-academic-pdf-preview {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white !important;
+                padding: 0;
+                margin: 0;
+            }
+            .no-print { display: none !important; }
+        }
+            .storage-type-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.15rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-align: left;
+            width: 100%;
+        }
+        .storage-type-card:hover {
+            border-color: var(--brand-primary);
+            background: var(--bg-muted);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+        .storage-type-card:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">ACADEMIC INFRASTRUCTURE</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Faculties, Degrees & Class Sections</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Academic Structure Management</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Configure institutional faculties, academic departments, degree programs, and classroom sections.</p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-academic-pdf-report">
+                            <i data-lucide="printer" style="width: 16px;"></i> Print PDF Audit Report
+                        </button>
+                        <button class="btn btn-outline" id="btn-academic-csv-export">
+                            <i data-lucide="download" style="width: 16px;"></i> Export CSV
+                        </button>
+                        <button class="btn btn-primary" id="btn-add-entity-dropdown">
+                            <i data-lucide="plus" style="width: 16px;"></i> Create Entity
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Overview Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.1); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Departments</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-depts">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(139,92,246,0.1); color: var(--brand-accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="graduation-cap" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Degree Programs</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-programs">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16,185,129,0.1); color: var(--color-success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="users" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Class Sections</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-classes">0</div>
+                        </div>
+                    </div>
+
+                    <div class="card card-glass" style="display: flex; align-items: center; gap: 1rem; padding: 1.25rem;">
+                        <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(245,158,11,0.1); color: var(--color-warning); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="award" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Total Student Capacity</div>
+                            <div style="font-size: 1.6rem; font-weight: 900; color: var(--text-primary);" id="kpi-total-capacity">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs Navigation -->
+                <div style="display: flex; gap: 0.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+                    <button class="structure-tab-btn active" data-tab="tab-departments"><i data-lucide="building" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Academic Departments</button>
+                    <button class="structure-tab-btn" data-tab="tab-programs"><i data-lucide="graduation-cap" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Degree Programs & Courses</button>
+                    <button class="structure-tab-btn" data-tab="tab-classes"><i data-lucide="users" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Classroom Sections & Batches</button>
+                    <button class="structure-tab-btn" data-tab="tab-tree"><i data-lucide="network" style="width: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> Complete Hierarchy Tree</button>
+                </div>
+
+                <!-- TAB 1: ACADEMIC DEPARTMENTS -->
+                <div id="tab-departments" class="tab-content-panel" style="display: block;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Academic Departments & Faculties</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Manage academic departments, Head of Department (HOD) faculty, and student intake allocations.</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-open-dept-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Department</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-departments" class="custom-checkbox"></th>
+                                        <th>Code</th>
+                                        <th>Department Name</th>
+                                        <th>Head of Department (HOD)</th>
+                                        <th>Contact Email</th>
+                                        <th>Programs Count</th>
+                                        <th>Classes Count</th>
+                                        <th>Intake Capacity</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="departments-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: DEGREE PROGRAMS & COURSES -->
+                <div id="tab-programs" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Degree Programs & Academic Courses</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Track undergraduate, postgraduate, diploma, and doctoral curriculum streams.</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-open-program-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Degree Program</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-programs" class="custom-checkbox"></th>
+                                        <th>Program Code</th>
+                                        <th>Program / Course Name</th>
+                                        <th>Parent Department</th>
+                                        <th>Degree Level</th>
+                                        <th>Duration (Years)</th>
+                                        <th>Total Credits</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="programs-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: CLASSROOM SECTIONS & BATCHES -->
+                <div id="tab-classes" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Classroom Sections & Academic Batches</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Configure student class cohorts, assigned class mentor teachers, room locations, and intake roll numbers.</p>
+                            </div>
+                            <button class="btn btn-primary btn-sm" id="btn-open-class-modal"><i data-lucide="plus" style="width: 14px;"></i> Add Class Section</button>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="checkbox-cell" style="width: 44px; text-align: center;"><input type="checkbox" id="select-all-classes" class="custom-checkbox"></th>
+                                        <th>Class Code</th>
+                                        <th>Section Name</th>
+                                        <th>Department</th>
+                                        <th>Semester / Year</th>
+                                        <th>Faculty Mentor</th>
+                                        <th>Room No</th>
+                                        <th>Enrolled / Max</th>
+                                        <th style="text-align: right;">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="classes-tbody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 4: COMPLETE HIERARCHY TREE -->
+                <div id="tab-tree" class="tab-content-panel" style="display: none;">
+                    <div class="card card-glass">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                            <div>
+                                <h3 style="font-size: 1.15rem; font-weight: 800; margin: 0;">Interactive Academic Hierarchy Matrix</h3>
+                                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">Visual tree view mapping Departments ➔ Degree Programs ➔ Class Cohorts.</p>
+                            </div>
+                        </div>
+
+                        <div id="academic-tree-container" style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Dynamic -->
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+        <!-- MODAL: SELECT ACADEMIC ENTITY TYPE -->
+    <div id="modal-select-entity-type" class="app-dialog-overlay">
+        <div class="app-dialog modal-responsive" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.85rem;">
+                <div style="display: flex; align-items: center; gap: 0.65rem;">
+                    <div style="width: 38px; height: 38px; border-radius: var(--radius-sm); background: var(--brand-gradient); color: white; display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-glow-brand);">
+                        <i data-lucide="network" style="width: 20px; height: 20px;"></i>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 1.2rem; font-weight: 800; margin: 0; color: var(--text-primary);">Create Academic Entity</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">Select which academic hierarchy level you want to configure</p>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-ghost btn-icon close-select-entity-modal" title="Close"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <!-- Choice 1: Department -->
+                <div class="storage-type-card" id="btn-choice-dept">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.12); color: var(--brand-primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="building" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Academic Department</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Core faculty discipline, department code, HOD leadership, and intake capacity.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+
+                <!-- Choice 2: Degree Program -->
+                <div class="storage-type-card" id="btn-choice-program">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(99,102,241,0.12); color: #6366f1; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="graduation-cap" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Degree / Major Program</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Degree curriculum, award level (UG/PG), duration years, and total credit points.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+
+                <!-- Choice 3: Class Section -->
+                <div class="storage-type-card" id="btn-choice-class">
+                    <div style="width: 44px; height: 44px; border-radius: 10px; background: rgba(16,185,129,0.12); color: var(--color-success); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="users" style="width: 22px; height: 22px;"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 700; font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">Classroom Section / Batch</div>
+                        <div style="font-size: 0.8rem; color: var(--text-secondary);">Specific class division, faculty mentor, room assignment, and student capacity.</div>
+                    </div>
+                    <i data-lucide="chevron-right" style="width: 18px; height: 18px; color: var(--text-muted);"></i>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.25rem; padding-top: 0.85rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <button type="button" class="btn btn-outline close-select-entity-modal" style="font-size: 0.85rem; padding: 0.45rem 1rem;">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT DEPARTMENT -->
+    <div id="modal-dept" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-dept-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Academic Department</h3>
+                <button class="btn btn-ghost btn-icon close-dept-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-dept">
+                <input type="hidden" id="dept-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Code *</label>
+                        <input type="text" id="dept-code" placeholder="e.g. CS" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Department Name *</label>
+                        <input type="text" id="dept-name" placeholder="e.g. Computer Science & Engineering" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Head of Department (HOD) *</label>
+                    <input type="text" id="dept-hod" placeholder="e.g. HOD Full Name" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Contact Email</label>
+                        <input type="email" id="dept-email" placeholder="e.g. hod@institution.edu">
+                    </div>
+                    <div class="input-group">
+                        <label>Total Intake Capacity</label>
+                        <input type="number" id="dept-capacity" placeholder="180" min="1" value="120">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-dept-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Department</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT PROGRAM -->
+    <div id="modal-program" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-program-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Degree Program</h3>
+                <button class="btn btn-ghost btn-icon close-program-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-program">
+                <input type="hidden" id="prog-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Program Code *</label>
+                        <input type="text" id="prog-code" placeholder="e.g. BTECH-CSE" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Program Title *</label>
+                        <input type="text" id="prog-name" placeholder="e.g. B.Tech Computer Science" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Parent Department *</label>
+                    <select id="prog-dept-select" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Degree Level</label>
+                        <select id="prog-level" style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                            <option value="Undergraduate (UG)">Undergraduate (UG)</option>
+                            <option value="Postgraduate (PG)">Postgraduate (PG)</option>
+                            <option value="Diploma / Poly">Diploma / Polytechnic</option>
+                            <option value="Doctoral (Ph.D)">Doctoral (Ph.D)</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Duration (Years)</label>
+                        <input type="number" id="prog-duration" placeholder="4" min="1" max="6" value="4">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-program-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Program</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: ADD/EDIT CLASS SECTION -->
+    <div id="modal-class" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 520px; text-align: left;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h3 id="modal-class-title" style="font-size: 1.25rem; font-weight: 800; margin: 0;">Add Classroom Section</h3>
+                <button class="btn btn-ghost btn-icon close-class-modal"><i data-lucide="x" style="width: 18px;"></i></button>
+            </div>
+            <form id="form-class">
+                <input type="hidden" id="cls-id" value="">
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 0.85rem;">
+                    <div class="input-group">
+                        <label>Class Code *</label>
+                        <input type="text" id="cls-code" placeholder="e.g. CS-A" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Section Full Name *</label>
+                        <input type="text" id="cls-name" placeholder="e.g. CS-A 2026 Batch" required>
+                    </div>
+                </div>
+                <div class="input-group" style="margin-top: 0.85rem;">
+                    <label>Department *</label>
+                    <select id="cls-dept-select" required style="padding: 0.6rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-primary); width: 100%;">
+                        <!-- Dynamic -->
+                    </select>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Academic Year / Sem</label>
+                        <input type="text" id="cls-sem" placeholder="Semester 4 (Year 2)">
+                    </div>
+                    <div class="input-group">
+                        <label>Room / Hall No</label>
+                        <input type="text" id="cls-room" placeholder="Room 204">
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem; margin-top: 0.85rem;">
+                    <div class="input-group">
+                        <label>Faculty Mentor / Teacher</label>
+                        <input type="text" id="cls-mentor" placeholder="e.g. Faculty Mentor Name">
+                    </div>
+                    <div class="input-group">
+                        <label>Max Seat Strength</label>
+                        <input type="number" id="cls-capacity" min="1" value="60">
+                    </div>
+                </div>
+                <div style="margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem;">
+                    <button type="button" class="btn btn-outline close-class-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary"><i data-lucide="save" style="width: 16px;"></i> Save Section</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRINTABLE ACADEMIC AUDIT PDF REPORT -->
+    <div id="modal-academic-pdf-preview" class="app-dialog-overlay">
+        <div class="app-dialog" style="max-width: 820px; text-align: left; background: white; color: #1e293b; padding: 2rem;">
+            <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid #e2e8f0; padding-bottom: 1rem;">
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 800; margin: 0; color: #0f172a;">Institutional Academic Hierarchy Audit Sheet</h3>
+                    <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Official Accreditation & Governance Record</p>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button class="btn btn-primary btn-sm" onclick="window.print()"><i data-lucide="printer" style="width: 14px;"></i> Print / Save PDF</button>
+                    <button class="btn btn-outline btn-sm close-pdf-modal"><i data-lucide="x" style="width: 14px;"></i> Close</button>
+                </div>
+            </div>
+
+            <!-- Printable Sheet Layout -->
+            <div id="academic-printable-sheet">
+                <!-- Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0f172a; padding-bottom: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <h2 style="font-size: 1.5rem; font-weight: 900; margin: 0; color: #0f172a;" id="pdf-inst-name">INSTITUTION</h2>
+                        <div style="font-size: 0.85rem; color: #475569;" id="pdf-inst-tagline">Office of the Registrar & Dean of Academics</div>
+                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">Official Academic Infrastructure & Department Accreditation Matrix</div>
+                    </div>
+                    <div style="text-align: right; font-size: 0.8rem; color: #475569;">
+                        <div>Date: <strong id="pdf-report-date"></strong></div>
+                        <div>Reg ID: <span style="font-family: monospace;" id="pdf-inst-code">ACAD-AUDIT-01</span></div>
+                        <span class="badge badge-success" style="font-size: 0.65rem; background: #dcfce7; color: #15803d; border: 1px solid #86efac;">AUDIT CERTIFIED</span>
+                    </div>
+                </div>
+
+                <!-- Summary Matrix -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem; font-size: 0.85rem;">
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL DEPTS</span><strong id="pdf-summary-depts" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL PROGRAMS</span><strong id="pdf-summary-progs" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL CLASSES</span><strong id="pdf-summary-classes" style="font-size: 1.1rem; color: #0f172a;">0</strong></div>
+                    <div><span style="color: #64748b; display: block; font-size: 0.72rem;">TOTAL INTAKE</span><strong id="pdf-summary-intake" style="font-size: 1.1rem; color: #0f172a;">0 Seats</strong></div>
+                </div>
+
+                <!-- Department Breakdown Table -->
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.03em;">1. Academic Faculties & Department Roll</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.8rem;">
+                    <thead>
+                        <tr style="background: #0f172a; color: white;">
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Dept Code</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">Department Name</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #0f172a;">HOD Faculty</th>
+                            <th style="padding: 0.5rem; text-align: center; border: 1px solid #0f172a;">Programs</th>
+                            <th style="padding: 0.5rem; text-align: center; border: 1px solid #0f172a;">Classes</th>
+                            <th style="padding: 0.5rem; text-align: right; border: 1px solid #0f172a;">Intake</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-depts-table-body">
+                        <!-- Dynamic -->
+                    </tbody>
+                </table>
+
+                <!-- Class Sections Breakdown Table -->
+                <h4 style="font-size: 0.95rem; font-weight: 800; color: #0f172a; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.03em;">2. Active Classroom Cohorts & Faculty Mentors</h4>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 2rem; font-size: 0.8rem;">
+                    <thead>
+                        <tr style="background: #334155; color: white;">
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Class Code</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Section Title</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Department</th>
+                            <th style="padding: 0.5rem; text-align: left; border: 1px solid #334155;">Faculty Mentor</th>
+                            <th style="padding: 0.5rem; text-align: center; border: 1px solid #334155;">Room</th>
+                            <th style="padding: 0.5rem; text-align: right; border: 1px solid #334155;">Capacity</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pdf-classes-table-body">
+                        <!-- Dynamic -->
+                    </tbody>
+                </table>
+
+                <!-- Institutional Sign-Off Section -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3rem; padding-top: 1.5rem; border-top: 1px dashed #cbd5e1; font-size: 0.8rem;">
+                    <div style="text-align: center; width: 220px;">
+                        <div style="border-bottom: 1px solid #0f172a; height: 35px; margin-bottom: 0.25rem;"></div>
+                        <strong style="color: #0f172a;">Dean of Academic Affairs</strong>
+                        <div style="font-size: 0.7rem; color: #64748b;">Signature & Date</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="width: 65px; height: 65px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #94a3b8; margin: 0 auto 0.25rem auto;">
+                            ACADEMIC<br>SEAL
+                        </div>
+                    </div>
+                    <div style="text-align: center; width: 220px;">
+                        <div style="border-bottom: 1px solid #0f172a; height: 35px; margin-bottom: 0.25rem;"></div>
+                        <strong style="color: #0f172a;">University Registrar / Chancellor</strong>
+                        <div style="font-size: 0.7rem; color: #64748b;">Official Verification Seal</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="shortcuts.js"></script>
+    <script type="module" src="academic_structure.js"></script>
+</body>
+</html>

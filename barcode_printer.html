@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Label Generator - TGI LIBRARY</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="TGI LIBRARY">
+    <link rel="apple-touch-icon" href="assets/icons/icon-192x192.svg">
+    <link rel="stylesheet" href="variables.css">
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="components.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+    <style>
+        /* Print Specific Overrides */
+        @media print {
+            body * { visibility: hidden; }
+            #print-canvas, #print-canvas * { visibility: visible; }
+            #print-canvas { 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                display: grid !important; 
+                gap: 5mm !important; 
+                padding: 10mm !important; 
+                background: white !important;
+            }
+            .barcode-label { 
+                page-break-inside: avoid; 
+                border: 1px dashed #999 !important; 
+                display: flex !important; 
+                flex-direction: column !important; 
+                align-items: center !important; 
+                justify-content: center !important; 
+                background: white !important; 
+                color: black !important; 
+            }
+        }
+        .barcode-label canvas, .barcode-label svg { max-width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div id="sidebar-container"></div>
+
+        <!-- Main Content Area -->
+        <div class="main-content-wrapper">
+            <div id="topbar-container"></div>
+            
+            <main class="main-content" id="main-content">
+                <!-- Page Header -->
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                            <span class="badge badge-brand" style="font-size: 0.7rem;">LABEL MAKER</span>
+                            <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Direct PDF Output</span>
+                        </div>
+                        <h1 style="font-size: 1.85rem; font-weight: 800; letter-spacing: -0.03em;">Barcode Generator & Printer</h1>
+                        <p style="color: var(--text-secondary); font-size: 0.95rem;">Configure physical sticker dimensions and print high-resolution Code-128 barcodes.</p>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                        <button class="btn btn-outline" id="btn-clear-queue"><i data-lucide="trash-2" style="width: 16px;"></i> Clear Queue</button>
+                        <button class="btn btn-primary" onclick="window.print()"><i data-lucide="printer" style="width: 16px;"></i> Print Barcode Sheet</button>
+                    </div>
+                </div>
+
+                <div class="responsive-grid-2">
+                    <!-- Configuration Panel -->
+                    <div class="card card-glass" style="height: fit-content;">
+                        <h2 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem;">1. Label Geometry & Template</h2>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                            <div class="input-group" style="margin: 0;">
+                                <label>Sticker Width (mm)</label>
+                                <input type="number" id="label-width" value="50" min="25" max="150">
+                            </div>
+                            <div class="input-group" style="margin: 0;">
+                                <label>Sticker Height (mm)</label>
+                                <input type="number" id="label-height" value="28" min="15" max="100">
+                            </div>
+                            <div class="input-group" style="margin: 0;">
+                                <label>Labels Per Row</label>
+                                <input type="number" id="labels-per-row" value="3" min="1" max="6">
+                            </div>
+                            <div class="input-group" style="margin: 0;">
+                                <label>Institute Header</label>
+                                <select id="include-header">
+                                    <option value="yes">TGI LIBRARY</option>
+                                    <option value="no">None</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h2 style="font-size: 1.15rem; font-weight: 700; margin: 1.5rem 0 1rem 0; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">2. Add Items to Queue</h2>
+                        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <select id="entity-type" style="width: 130px;">
+                                    <option value="book_copies">Book Copies</option>
+                                    <option value="shelves">Shelves</option>
+                                    <option value="racks">Racks</option>
+                                    <option value="custom">Custom Text</option>
+                                </select>
+                                <input type="text" id="search-entities" placeholder="Search title or barcode..." style="flex: 1; min-width: 180px;">
+                                <button class="btn btn-primary" id="btn-add-to-queue"><i data-lucide="plus" style="width: 16px;"></i> Add</button>
+                            </div>
+
+                            <button class="btn btn-outline btn-sm" id="btn-add-all-copies" style="justify-content: center;">
+                                <i data-lucide="layers" style="width: 14px;"></i> Add All Available Book Copies to Queue
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Print Queue & Live Visual Sheet -->
+                    <div class="card card-glass" style="display: flex; flex-direction: column;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <div>
+                                <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0;">Print Sheet Preview</h2>
+                                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;" id="queue-count-text">0 labels in sheet</p>
+                            </div>
+                        </div>
+                        
+                        <div id="print-canvas" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; background: var(--bg-muted); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); min-height: 420px; max-height: 580px; overflow-y: auto; align-content: flex-start;">
+                            <div id="empty-queue-message" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
+                                <i data-lucide="printer" style="width: 36px; height: 36px; opacity: 0.4; margin-bottom: 0.5rem;"></i>
+                                <div style="font-weight: 600;">Print Queue is Empty</div>
+                                <p style="font-size: 0.8rem; margin-top: 0.25rem;">Search and add items from the left panel to populate barcode stickers.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>lucide.createIcons();</script>
+    <script type="module" src="auth.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module">
+        import { supabase } from './supabaseClient.js';
+
+        const printCanvas = document.getElementById('print-canvas');
+        const queueCountText = document.getElementById('queue-count-text');
+        const emptyMsg = document.getElementById('empty-queue-message');
+        let queueItems = [];
+
+        function updateGridColumns() {
+            const cols = document.getElementById('labels-per-row').value || 3;
+            printCanvas.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        }
+
+        document.getElementById('labels-per-row').addEventListener('input', updateGridColumns);
+
+        function updateQueueCount() {
+            queueCountText.innerText = `${queueItems.length} labels in print sheet`;
+            if (emptyMsg) {
+                emptyMsg.style.display = queueItems.length === 0 ? 'block' : 'none';
+            }
+        }
+
+        document.getElementById('btn-add-to-queue').addEventListener('click', async () => {
+            const type = document.getElementById('entity-type').value;
+            const search = document.getElementById('search-entities').value.trim();
+
+            if (!search) {
+                return window.app?.toast("Please type a search query or custom code.", "warning", "Input Required");
+            }
+
+            if (type === 'custom') {
+                addLabelToQueue(search, search, 'Custom Label');
+                return;
+            }
+
+            try {
+                if (type === 'book_copies') {
+                    const { data } = await supabase
+                        .from('book_copies')
+                        .select('id, barcode, books(title)')
+                        .or(`barcode.ilike.%${search}%`)
+                        .limit(5);
+
+                    if (data && data.length > 0) {
+                        data.forEach(c => addLabelToQueue(c.barcode, c.barcode, c.books?.title || 'Book Copy'));
+                        window.app?.toast(`Added ${data.length} copy barcode(s) to queue.`, "success", "Added");
+                    } else {
+                        // Fallback add directly
+                        addLabelToQueue(search, search, 'Book Barcode');
+                    }
+                } else if (type === 'shelves') {
+                    addLabelToQueue(`ATH-S-${search.toUpperCase()}`, `ATH-S-${search.toUpperCase()}`, `Shelf: ${search}`);
+                } else if (type === 'racks') {
+                    addLabelToQueue(`ATH-R-${search.toUpperCase()}`, `ATH-R-${search.toUpperCase()}`, `Rack: ${search}`);
+                }
+            } catch (e) {
+                addLabelToQueue(search, search, 'Barcode');
+            }
+        });
+
+        // Add all available copies
+        document.getElementById('btn-add-all-copies').addEventListener('click', async () => {
+            try {
+                const { data: copies } = await supabase
+                    .from('book_copies')
+                    .select('id, barcode, books(title)')
+                    .eq('status', 'AVAILABLE')
+                    .limit(50);
+
+                if (copies && copies.length > 0) {
+                    copies.forEach(c => addLabelToQueue(c.barcode, c.barcode, c.books?.title || 'Book'));
+                    window.app?.toast(`Added ${copies.length} labels to queue.`, "success", "Queue Updated");
+                } else {
+                    window.app?.toast("No copies found in inventory.", "info", "Empty");
+                }
+            } catch (e) {
+                window.app?.toast("Failed to load copies.", "error", "Error");
+            }
+        });
+
+        function addLabelToQueue(code, barcodeValue, title) {
+            const width = document.getElementById('label-width').value || 50;
+            const height = document.getElementById('label-height').value || 28;
+            const includeHeader = document.getElementById('include-header').value === 'yes';
+            const labelId = `label-svg-${Date.now()}-${Math.floor(Math.random()*1000)}`;
+
+            queueItems.push({ code, barcodeValue, title });
+            updateQueueCount();
+
+            const headerHtml = includeHeader ? `<div style="font-size: 8px; font-weight: 800; letter-spacing: 0.5px; margin-bottom: 2px;">TGI LIBRARY</div>` : '';
+
+            const labelHtml = `
+                <div class="barcode-label" style="background: white; color: #000; border: 1px solid #cbd5e1; border-radius: 6px; padding: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+                    ${headerHtml}
+                    <div style="font-size: 8px; font-weight: 600; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 2px;">
+                        ${title}
+                    </div>
+                    <svg id="${labelId}" style="max-width: 100%; height: 32px;"></svg>
+                </div>
+            `;
+
+            printCanvas.insertAdjacentHTML('beforeend', labelHtml);
+
+            setTimeout(() => {
+                if (window.JsBarcode) {
+                    JsBarcode(`#${labelId}`, barcodeValue, {
+                        format: "CODE128",
+                        width: 1.3,
+                        height: 26,
+                        displayValue: true,
+                        fontSize: 9,
+                        margin: 0
+                    });
+                }
+            }, 20);
+        }
+
+        document.getElementById('btn-clear-queue').addEventListener('click', () => {
+            queueItems = [];
+            printCanvas.innerHTML = `
+                <div id="empty-queue-message" style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 4rem 1rem;">
+                    <i data-lucide="printer" style="width: 36px; height: 36px; opacity: 0.4; margin-bottom: 0.5rem;"></i>
+                    <div style="font-weight: 600;">Print Queue is Empty</div>
+                    <p style="font-size: 0.8rem; margin-top: 0.25rem;">Search and add items from the left panel to populate barcode stickers.</p>
+                </div>
+            `;
+            if (window.lucide) lucide.createIcons();
+            updateQueueCount();
+            window.app?.toast("Print queue cleared.", "info", "Cleared");
+        });
+    </script>
+</body>
+</html>
